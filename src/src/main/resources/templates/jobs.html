@@ -1,147 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<title>IPFIX Generator</title>
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400"
-	rel="stylesheet" />
-<!-- https://fonts.google.com/ -->
+<title>IPFIX Generator Jobs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="css/bootstrap.min.css" rel="stylesheet" />
-<!-- https://getbootstrap.com/ -->
 <link href="fontawesome/css/all.min.css" rel="stylesheet" />
-<!-- https://fontawesome.com/ -->
-<link href="css/templatemo-diagoona.css" rel="stylesheet" />
 <link href="css/style.css" rel="stylesheet" />
-<!--
-
-TemplateMo 550 Diagoona
-
-https://templatemo.com/tm-550-diagoona
-
--->
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-	$(document)
-			.ready(
-					function() {
-						function updateTable() {
-							$
-									.getJSON(
-											"/api/jobs",
-											function(data) {
-												var table = "<div class='list-group' style='color:black'>";
-												$
-														.each(
-																data,
-																function(index,
-																		item) {
-																	table += "<a href='/jobs/" + item.id + "' class='list-group-item list-group-item-action flex-column align-items-start'>"
-																			+ "<div class='d-flex w-100 justify-content-between'>"
-																			+ "<h5 class='mb-1'>"
-																			+ item.name
-																			+ "</h5>"
-																			+ "<small class='text-muted'>"
-																			+ item.created
-																			+ "</small>"
-																			+ "</div>"
-																			+ "<small class='text-muted'>"
-																			+ "<span class='badge badge-secondary'>"+item.status+"</span>"
-																			+ " "+item.packetsSend+" packets sent </small>"
-																			+ "</a>";
-																});
-												table += "</div>";
-												$("#tableContainer")
-														.html(table);
-											});
-						}
-
-						// Call the updateTable function every 10 seconds (10000 milliseconds)
-						setInterval(updateTable, 10000);
-
-						// Initial call to populate the table immediately
-						updateTable();
-					});
-</script>
-
-
-
 </head>
-
 <body>
-	<div class="tm-container">
-		<div>
-			<div class="tm-row pt-4">
-				<div class="tm-col-left">
-					<div class="tm-site-header media">
+  <div class="app-shell">
+    <header class="app-nav">
+      <a class="app-brand" href="/">
+        <img src="img/logo.png" alt="IPFIX Generator logo">
+        <div class="app-brand-title">
+          <strong>IPFIX Generator</strong>
+          <span>Traffic Lab Toolkit</span>
+        </div>
+      </a>
+      <nav class="app-nav-links">
+        <a class="app-nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+        <a class="app-nav-link is-active" href="/jobs"><i class="fas fa-wave-square"></i> Jobs</a>
+        <a class="app-nav-link" href="/swagger-ui/index.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open"></i> API-DOCS</a>
+      </nav>
+    </header>
 
-						<img src="img/logo.png" width="40px" alt="Image"
-							class="tm-service-img">
-						<div class="media-body">
-							<h1 class="tm-sitename text-uppercase" style="font-size: 1.8rem;">IPFIX
-								Generator</h1>
-						</div>
-					</div>
-				</div>
-				<div class="tm-col-right">
-					<nav class="navbar navbar-expand-lg" id="tm-main-nav">
-						<button class="navbar-toggler toggler-example mr-0 ml-auto"
-							type="button" data-toggle="collapse" data-target="#navbar-nav"
-							aria-controls="navbar-nav" aria-expanded="false"
-							aria-label="Toggle navigation">
-							<span><i class="fas fa-bars"></i></span>
-						</button>
-						<div class="collapse navbar-collapse tm-nav" id="navbar-nav">
-							<ul class="navbar-nav text-uppercase">
-								<li class="nav-item"><a class="nav-link tm-nav-link"
-									href="/">Home </a></li>
-								<li class="nav-item active"><a class="nav-link tm-nav-link"
-									href="/jobs">Jobs</a></li>
-								<li class="nav-item"><a class="nav-link tm-nav-link"
-									href="/swagger-ui/index.html"><i class="far fa-file-alt"></i> API-DOCS</a></li>
+    <main class="page-grid">
+      <section>
+        <article class="panel hero-panel">
+          <div class="toolbar">
+            <div>
+              <p class="eyebrow"><i class="fas fa-clipboard-list"></i> Live Job Dashboard</p>
+              <h1 class="page-title">Watch active and completed generator jobs in one place.</h1>
+              <p class="page-subtitle">The jobs overview refreshes automatically every 5 seconds and surfaces status, destination, throughput, and packet progress without forcing the table off-screen.</p>
+            </div>
+            <span class="live-pill">Live Feed</span>
+          </div>
+        </article>
+      </section>
 
+      <section class="summary-grid" id="summaryGrid">
+        <div class="stat-card">
+          <div class="stat-label">Total Jobs</div>
+          <div class="stat-value" id="totalJobs">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Running / Sleeping</div>
+          <div class="stat-value stat-value--accent" id="runningJobs">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value stat-value--success" id="completedJobs">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Packets Sent</div>
+          <div class="stat-value stat-value--warning" id="packetsSent">0</div>
+        </div>
+      </section>
 
-							</ul>
-						</div>
-					</nav>
-				</div>
-			</div>
+      <section class="panel content-panel">
+        <div class="toolbar">
+          <div>
+            <h2 class="section-title">Current Jobs</h2>
+            <p class="toolbar-copy">Desktop uses a fixed, scroll-safe table. Mobile switches to cards to keep every field readable.</p>
+          </div>
+          <a class="app-button app-button--secondary" href="/"><i class="fas fa-plus"></i> New Job</a>
+        </div>
 
-			<div class="tm-row">
-				<section class="tm-content col-md-12" style="max-width: 100%;">
-					<div id="tableContainer" style="color: white"></div>
-				</section>
+        <div class="mobile-list" id="jobsCards"></div>
 
+        <div class="table-shell table-shell--desktop">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Job</th>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>PPS</th>
+                <th>Progress</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="jobsTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">Loading jobs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
 
-				<div class="tm-row">
-					<div class="tm-col-left" style="margin-left: 20px"></div>
-					<div class="tm-col-right tm-col-footer">
-						<footer class="tm-site-footer text-right">
-							<p class="mb-0"
-								style="position: absolute; bottom: 20px; right: 20px; font-size: 10px">
-								Developed by <a href="https://wenisch.tech">Jean-Fabian
-									Wenisch | wenisch.tech</a>
-							</p>
-						</footer>
-					</div>
-				</div>
+    <footer class="footer">
+      <span>Developed by <a href="https://wenisch.tech">Jean-Fabian Wenisch | wenisch.tech</a></span>
+      <span id="jobsRefreshHint">Last refresh pending...</span>
+    </footer>
+  </div>
 
-				<!-- Diagonal background design -->
-				<div class="tm-bg">
-					<div class="tm-bg-left"></div>
-					<div class="tm-bg-right"></div>
-				</div>
-			</div>
+  <script>
+    (function () {
+      const tableBody = document.getElementById("jobsTableBody");
+      const cards = document.getElementById("jobsCards");
+      const totalJobs = document.getElementById("totalJobs");
+      const runningJobs = document.getElementById("runningJobs");
+      const completedJobs = document.getElementById("completedJobs");
+      const packetsSent = document.getElementById("packetsSent");
+      const jobsRefreshHint = document.getElementById("jobsRefreshHint");
 
-			<script src="js/jquery-3.4.1.min.js"></script>
-			<script src="js/bootstrap.min.js"></script>
-			<script src="js/jquery.backstretch.min.js"></script>
-			<script src="js/templatemo-script.js"></script>
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (char) {
+          return ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+          })[char];
+        });
+      }
+
+      function statusClass(status) {
+        const normalized = String(status || "unknown").toLowerCase();
+        if (normalized === "running" || normalized === "sleeping") {
+          return "status-running";
+        }
+        if (normalized === "completed") {
+          return "status-completed";
+        }
+        if (normalized === "error") {
+          return "status-error";
+        }
+        return "status-initializing";
+      }
+
+      function renderJobs(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+          tableBody.innerHTML = "<tr><td colspan='7' class='empty-state'>No jobs have been created yet.</td></tr>";
+          cards.innerHTML = "<div class='empty-state panel'>No jobs have been created yet.</div>";
+          totalJobs.textContent = "0";
+          runningJobs.textContent = "0";
+          completedJobs.textContent = "0";
+          packetsSent.textContent = "0";
+          jobsRefreshHint.textContent = "No jobs available.";
+          return;
+        }
+
+        const runningCount = data.filter((item) => ["running", "sleeping"].includes(String(item.status || "").toLowerCase())).length;
+        const completedCount = data.filter((item) => String(item.status || "").toLowerCase() === "completed").length;
+        const packetsValue = data.reduce((sum, item) => sum + Number(item.packetsSend || 0), 0);
+
+        totalJobs.textContent = String(data.length);
+        runningJobs.textContent = String(runningCount);
+        completedJobs.textContent = String(completedCount);
+        packetsSent.textContent = String(packetsValue);
+        jobsRefreshHint.textContent = "Last refreshed at " + new Date().toLocaleTimeString();
+
+        tableBody.innerHTML = data.map(function (item) {
+          const safeName = escapeHtml(item.name);
+          const safeCreated = escapeHtml(item.created);
+          const safeHost = escapeHtml(item.destHost);
+          const safeStatus = escapeHtml(item.status);
+          const safePort = escapeHtml(item.destPort);
+          const safeProgress = escapeHtml(item.packetsSend) + " / " + escapeHtml(item.totalPackets);
+          const safePps = escapeHtml(item.pps);
+          const rowClass = statusClass(item.status);
+
+          return "<tr>" +
+            "<td><span class='table-code'>#" + escapeHtml(item.id) + "</span></td>" +
+            "<td class='table-title'><a href='/jobs/" + escapeHtml(item.id) + "'><strong>" + safeName + "</strong></a></td>" +
+            "<td class='table-wrap'><span class='table-code'>" + safeHost + ":" + safePort + "</span></td>" +
+            "<td><span class='status-badge " + rowClass + "'>" + safeStatus + "</span></td>" +
+            "<td class='table-mono'>" + safePps + "</td>" +
+            "<td class='table-mono'>" + safeProgress + "</td>" +
+            "<td class='table-subtle table-wrap'>" + safeCreated + "</td>" +
+            "</tr>";
+        }).join("");
+
+        cards.innerHTML = data.map(function (item) {
+          const safeId = escapeHtml(item.id);
+          const safeName = escapeHtml(item.name);
+          const safeStatus = escapeHtml(item.status);
+          const safeCreated = escapeHtml(item.created);
+          const rowClass = statusClass(item.status);
+
+          return "<a class='mobile-card' href='/jobs/" + safeId + "'>" +
+            "<div class='mobile-card-header'>" +
+              "<div>" +
+                "<p class='mobile-card-title'>" + safeName + "</p>" +
+                "<span class='table-subtle'>Created " + safeCreated + "</span>" +
+              "</div>" +
+              "<span class='status-badge " + rowClass + "'>" + safeStatus + "</span>" +
+            "</div>" +
+            "<div class='mobile-card-meta'>" +
+              "<div><span>Destination</span><strong>" + escapeHtml(item.destHost) + ":" + escapeHtml(item.destPort) + "</strong></div>" +
+              "<div><span>PPS</span><strong>" + escapeHtml(item.pps) + "</strong></div>" +
+              "<div><span>Packets</span><strong>" + escapeHtml(item.packetsSend) + "</strong></div>" +
+              "<div><span>Total</span><strong>" + escapeHtml(item.totalPackets) + "</strong></div>" +
+            "</div>" +
+          "</a>";
+        }).join("");
+      }
+
+      function loadJobs() {
+        fetch("/api/jobs")
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Failed to load jobs");
+            }
+            return response.json();
+          })
+          .then(renderJobs)
+          .catch(function () {
+            tableBody.innerHTML = "<tr><td colspan='7' class='empty-state'>Could not load jobs right now.</td></tr>";
+            cards.innerHTML = "<div class='empty-state panel'>Could not load jobs right now.</div>";
+            jobsRefreshHint.textContent = "Refresh failed.";
+          });
+      }
+
+      loadJobs();
+      window.setInterval(loadJobs, 5000);
+    })();
+  </script>
 </body>
-<script src="js/index.js"></script>
 </html>

@@ -30,18 +30,8 @@
 
 ![IPFIX Generator job details](docs/img/preview_jobdetails.jpeg)
 
-## Docker Usage
 
-Pull and run the published image:
-
-```bash
-docker run -d \
-  --name ipfix-generator \
-  -p 8080:8080 \
-  ghcr.io/jfwenisch/ipfix-generator:latest
-```
-
-## Steps to Run
+## Quickstart with Docker
 
 1. Start the container:
 

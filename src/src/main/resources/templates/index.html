@@ -1,183 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <title>IPFIX Generator</title>
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400"
-	rel="stylesheet" />
-<!-- https://fonts.google.com/ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="css/bootstrap.min.css" rel="stylesheet" />
-<!-- https://getbootstrap.com/ -->
 <link href="fontawesome/css/all.min.css" rel="stylesheet" />
-<!-- https://fontawesome.com/ -->
-<link href="css/templatemo-diagoona.css" rel="stylesheet" />
 <link href="css/style.css" rel="stylesheet" />
-<!--
-
-TemplateMo 550 Diagoona
-
-https://templatemo.com/tm-550-diagoona
-
--->
 </head>
-
 <body>
-	<div class="tm-container">
-		<div>
-			<div class="tm-row pt-4">
-				<div class="tm-col-left">
-					<div class="tm-site-header media" >
+  <div class="app-shell">
+    <header class="app-nav">
+      <a class="app-brand" href="/">
+        <img src="img/logo.png" alt="IPFIX Generator logo">
+        <div class="app-brand-title">
+          <strong>IPFIX Generator</strong>
+          <span>Traffic Lab Toolkit</span>
+        </div>
+      </a>
+      <nav class="app-nav-links">
+        <a class="app-nav-link is-active" href="/"><i class="fas fa-home"></i> Home</a>
+        <a class="app-nav-link" href="/jobs"><i class="fas fa-wave-square"></i> Jobs</a>
+        <a class="app-nav-link" href="/swagger-ui/index.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open"></i> API-DOCS</a>
+      </nav>
+    </header>
 
-						<img src="img/logo.png" width="40px" alt="Image"
-							class="tm-service-img">
-						<div class="media-body">
-							<h1 class="tm-sitename text-uppercase" style="font-size: 1.8rem;">IPFIX Generator</h1>
-						</div>
-					</div>
-				</div>
-                <div class="tm-col-right">
-                    <nav class="navbar navbar-expand-lg" id="tm-main-nav">
-                        <button class="navbar-toggler toggler-example mr-0 ml-auto" type="button" 
-                            data-toggle="collapse" data-target="#navbar-nav" 
-                            aria-controls="navbar-nav" aria-expanded="false" aria-label="Toggle navigation">
-                            <span><i class="fas fa-bars"></i></span>
-                        </button>
-                        <div class="collapse navbar-collapse tm-nav" id="navbar-nav">
-							<ul class="navbar-nav text-uppercase">
-               					<li class="nav-item active"><a class="nav-link tm-nav-link"
-									href="/">Home </a></li>
-								<li class="nav-item "><a class="nav-link tm-nav-link"
-									href="/jobs">Jobs</a></li>
-								<li class="nav-item "><a class="nav-link tm-nav-link"
-									href="/swagger-ui/index.html"><i class="far fa-file-alt"></i> API-DOCS</a></li>
-                            </ul>                            
-                        </div>                        
-                    </nav>
+    <main class="page-grid">
+      <section>
+        <article class="panel hero-panel">
+          <p class="eyebrow"><i class="fas fa-satellite-dish"></i> Modern Flow Simulation</p>
+          <h1 class="page-title">Generate IPFIX traffic with a cleaner, faster workflow.</h1>
+          <p class="page-subtitle page-subtitle--full" th:text="${description}">
+            This IPFIX Generator is a tool designed to create and send IPFIX traffic for testing, demonstration, and analysis purposes.
+          </p>
+         
+ <br><br>
+          <form action="/create" method="post" class="stack">
+            <div class="form-grid">
+              <div class="field">
+                <label for="destHost">IPFIX collector address</label>
+                <input class="app-input" type="text" name="destHost" id="destHost" placeholder="127.0.0.1" value="127.0.0.1">
+                <small>The IP address of the host that should receive the generated packets.</small>
+              </div>
+              <div class="field">
+                <label for="destPort">IPFIX collector port</label>
+                <input class="app-input" type="text" name="destPort" id="destPort" placeholder="4739" value="4739">
+                <small>The UDP port on the destination collector that should receive the exported IPFIX packets.</small>
+              </div>
+
+              <div class="field field--full">
+                <label for="destInput">Data template</label>
+                <select class="app-select" id="destInput">
+                  <option>L2IP</option>
+                </select>
+                <small>Select the record template that defines which flow fields are generated and exported.</small>
+              </div>
+
+              <div class="field field--full">
+                <label>Template options</label>
+                <div class="app-checks">
+                  <label class="app-check">
+                    <input type="checkbox" id="doUseOptionTemplate">
+                    <span>Include OptionsTemplate</span>
+                  </label>
+                  <label class="app-check">
+                    <input type="checkbox" id="doSrcRandom" checked disabled>
+                    <span>Randomize source IP</span>
+                  </label>
+                  <label class="app-check">
+                    <input type="checkbox" id="DoDstRandom" checked disabled>
+                    <span>Randomize destination IP</span>
+                  </label>
                 </div>
-			</div>
+              </div>
 
-			<div class="tm-row">
-				<div class="tm-col-left">
-					<section class="tm-content"
-						style="max-width: 80%; padding-left: 20px;">
-						<div class="row">
-						
-						</div>
-						<div class="row">
-							<h2 class="mb-5 tm-content-title" th:text="${title}"></h2>
-						<p class="mb-5" th:text="${description}"></p>
-						</div>
-					</section>
-				</div>
-				<main class="tm-col-right">
-					<section class="tm-content" style="max-width: 100%;">
-				
-						<form action="/create" method="post">
-						  <div class="form-row">
-  <div class="form-group col-md-8">
-    <label for="exampleInputEmail1">IPFIX collector address</label>
-    <input type="text" class="form-control" name="destHost" id="destHost" aria-describedby="emailHelp" placeholder="127.0.0.1" value="127.0.0.1">
-    <small id="emailHelp" class="form-text text-muted">The IP address of the host which should receive the packets</small>
-  </div>
-  <div class="form-group col-md-4">
-    <label for="exampleInputPassword1">IPFIX collector port</label>
-    <input type="text" class="form-control" name="destPort" id="destPort" placeholder="4739" value="4739">
-  </div>
-  </div>
-      <div class="form-group col-md-12">
-    <label for="exampleFormControlSelect1">Select data template</label>
-    <select class="form-control" id="destInput">
-      <option>L2IP</option>
-    </select>
-  </div>
-  <!-- 
-  </div>
-    <div class="form-group">
-    <label for="exampleInputPassword1">Observation Domain ID</label>
-    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="1">
-  </div>
-   -->
+              <div class="field">
+                <label for="destPPS">Packets per second</label>
+                <input class="app-input" type="text" name="destPPS" id="destPPS" placeholder="1" value="1">
+              </div>
+              <div class="field">
+                <label for="destTotalPackets">Total packets to be sent</label>
+                <input class="app-input" type="text" name="destTotalPackets" id="destTotalPackets" placeholder="10" value="10">
+                <small>Enter <code>0</code> to send packets until the process is stopped.</small>
+              </div>
+            </div>
 
-  <div style="padding-top: 20px; padding-bottom: 20px;">
-  <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="doUseOptionTemplate">
-    <label class="form-check-label" for="exampleCheck1">Include OptionsTemplate</label>
-  </div>
-  <div class="form-check">
-  <input class="form-check-input" type="checkbox" value="" id="doSrcRandom" checked disabled>
-  <label class="form-check-label" for="defaultCheck2">
-    Randomize data src IP address
-  </label>
-</div>
-<div class="form-check">
-  <input class="form-check-input" type="checkbox" value="" id="DoDstRandom" checked disabled>
-  <label class="form-check-label" for="defaultCheck2">
-        Randomize data dst IP address
-  </label>
-</div>
-</div>
-						  <div class="form-row">
+            <div class="app-button-row">
+              <span class="helper-text">The created job appears immediately in the live jobs dashboard.</span>
+              <button type="submit" class="app-button app-button--primary"><i class="fas fa-play"></i> Start generating packets</button>
+            </div>
+          </form>
+        </article>
+      </section>
+    </main>
 
-  <div class="form-group col-md-6">
-    <label for="destPPS">Packets per second</label>
-    <input type="text" class="form-control" name="destPPS" id="destPPS" placeholder="1" value="1">
+    <footer class="footer footer--end">
+      <span>Developed by <a href="https://wenisch.tech">Jean-Fabian Wenisch | wenisch.tech</a></span>
+    </footer>
   </div>
-    <div class="form-group col-md-6">
-    <label for="destTotalPackets">Total packets to be sent</label>
-    <input type="text" class="form-control" name="destTotalPackets" id="destTotalPackets" aria-describedby="emailHelp" placeholder="10" value="10">
-    <small id="emailHelp" class="form-text text-muted">Total amount of packets that should be sent. Enter 0 for sending packets until process is stopped.</small>
-  </div>
-  </div>
-<div class="col-md-12" style="padding-top:20px">
-  <button type="submit" class="btn btn-primary" style="width:100%"> <i class="fa fa-play"></i> Start generating packets</button>
-  </div>
-</form>
-						
-						<div class="table-responsive fixed-table-body">
-							<table class="table table-bordered table-hover table-striped"
-								style="word-break: break-word; background: white;">
-							
-								<tbody>
-									<tr th:each="entry : ${data}">
-										<td th:text="${entry.key}">Key</td>
-										<td th:text="${entry.value}">Value</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-						
-					</section>
-				</main>
-			</div>
-		</div>
-
-		<div class="tm-row">
-			<div class="tm-col-left" style="margin-left: 20px">
-			
-
-			</div>
-			<div class="tm-col-right tm-col-footer">
-				<footer class="tm-site-footer text-right">
-					<p class="mb-0" style="font-size: 10px">Developed by 
-			  <a  href="https://wenisch.tech">Jean-Fabian Wenisch | wenisch.tech</a></p>
-				</footer>
-			</div>
-		</div>
-
-		<!-- Diagonal background design -->
-		<div class="tm-bg">
-			<div class="tm-bg-left"></div>
-			<div class="tm-bg-right"></div>
-		</div>
-	</div>
-
-	<script src="js/jquery-3.4.1.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
-	<script src="js/jquery.backstretch.min.js"></script>
-	<script src="js/templatemo-script.js"></script>
 </body>
-<script src="js/index.js"></script>
 </html>

@@ -1,218 +1,283 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<title>IPFIX Generator</title>
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400"
-	rel="stylesheet" />
-<!-- https://fonts.google.com/ -->
+<title>IPFIX Generator Job</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="/css/bootstrap.min.css" rel="stylesheet" />
-<!-- https://getbootstrap.com/ -->
 <link href="/fontawesome/css/all.min.css" rel="stylesheet" />
-<!-- https://fontawesome.com/ -->
-<link href="/css/templatemo-diagoona.css" rel="stylesheet" />
 <link href="/css/style.css" rel="stylesheet" />
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-	$(document)
-			.ready(
-					function() {
-						var lastEntryCount = 0;
-
-						function updateTable() {
-							$
-									.getJSON(
-											'/api/jobs/'
-													+ window.location.pathname
-															.split("/").pop()
-													+ '/history',
-											function(data) {
-												var tableBody = $("#logTable tbody");
-												if (data.length > lastEntryCount) {
-													for (var i = lastEntryCount; i < data.length; i++) {
-														var details = data[i].details;
-														var truncatedDetails = details.length > 30 ? details
-																.substring(0,
-																		30)
-																+ "..."
-																: details;
-														var row = "<tr><td>"
-																+data[i].packetsSend
-																+ "</td><td>"
-																+ data[i].date
-																+ "</td><td>"
-																+ data[i].sourceIP +":"+  data[i].sourcePort
-																+ "</td><td>"
-																+ data[i].destIP +":"+  data[i].destPort
-																+ "</td><td>"
-																+ truncatedDetails
-																+ " <a href='#' class='read-more' data-fulltext='" + details + "'>Read more</a></td></tr>";
-														tableBody.append(row);
-													}
-													lastEntryCount = data.length;
-												}
-											});
-						}
-
-						$(document).on("click", ".read-more", function(event) {
-							event.preventDefault();
-							var fullText = $(this).data("fulltext");
-							$(this).parent().text(fullText);
-						});
-
-						// Call the updateTable function every 2 seconds (2000 milliseconds)
-						setInterval(updateTable, 2000);
-
-						// Initial call to populate the table immediately
-						updateTable();
-					});
-</script>
-
-
-
 </head>
-
 <body>
-	<div class="tm-container">
-		<div>
-			<div class="tm-row pt-4">
-				<div class="tm-col-left">
-					<div class="tm-site-header media">
+  <div class="app-shell">
+    <header class="app-nav">
+      <a class="app-brand" href="/">
+        <img src="/img/logo.png" alt="IPFIX Generator logo">
+        <div class="app-brand-title">
+          <strong>IPFIX Generator</strong>
+          <span>Traffic Lab Toolkit</span>
+        </div>
+      </a>
+      <nav class="app-nav-links">
+        <a class="app-nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+        <a class="app-nav-link is-active" href="/jobs"><i class="fas fa-wave-square"></i> Jobs</a>
+        <a class="app-nav-link" href="/swagger-ui/index.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open"></i> API-DOCS</a>
+      </nav>
+    </header>
 
-						<img src="/img/logo.png" width="40px" alt="Image"
-							class="tm-service-img">
-						<div class="media-body">
-							<h1 class="tm-sitename text-uppercase" style="font-size: 1.8rem;">IPFIX
-								Generator</h1>
-						</div>
-					</div>
-				</div>
-				<div class="tm-col-right">
-					<nav class="navbar navbar-expand-lg" id="tm-main-nav">
-						<button class="navbar-toggler toggler-example mr-0 ml-auto"
-							type="button" data-toggle="collapse" data-target="#navbar-nav"
-							aria-controls="navbar-nav" aria-expanded="false"
-							aria-label="Toggle navigation">
-							<span><i class="fas fa-bars"></i></span>
-						</button>
-						<div class="collapse navbar-collapse tm-nav" id="navbar-nav">
-							<ul class="navbar-nav text-uppercase">
-								<li class="nav-item"><a class="nav-link tm-nav-link"
-									href="/">Home </a></li>
-								<li class="nav-item"><a class="nav-link tm-nav-link"
-									href="/swagger-ui/index.html"><i class="far fa-file-alt"></i> API-DOCS</a></li>
-									 <ol class="breadcrumb" style="background:transparent;padding: inherit">
-								<li class="breadcrumb-item "><a class="nav-link tm-nav-link"
-									href="/jobs">Jobs</a></li>
-									    <li class="breadcrumb-item active" aria-current="page" style="display:inline-flex;" >
-									    <a class="nav-link tm-nav-link"
-									href="#"  th:text="${job.id}"></a>
-									</li>
-									  </ol>
-							
-							</ul>
-						</div>
-					</nav>
-				</div>
-			</div>
+    <main class="page-grid">
+      <section class="panel hero-panel">
+        <a class="back-link" href="/jobs"><i class="fas fa-arrow-left"></i> Back to Jobs</a>
+        <div class="toolbar">
+          <div>
+            <p class="eyebrow"><i class="fas fa-project-diagram"></i> Job Detail</p>
+            <h1 class="page-title" id="jobName" th:text="${job.name}">Job</h1>
+            <p class="page-subtitle">Live execution details, delivery metadata, and per-packet history stay inside bounded panels so the page remains readable even with long packet payloads.</p>
+          </div>
+          <div>
+            <span class="status-badge status-initializing" id="jobStatus" th:text="${job.status}">Initializing</span>
+          </div>
+        </div>
+      </section>
 
-			<div class="tm-row">
-				<div class="tm-col-left">
-					<section class="tm-content"
-						style="max-width: 80%; padding-left: 20px;">
-						<div class="row"></div>
-						<div class="row">
-							<div class="col-md-12">
-						<span class="badge badge-primary col-md-4" th:text="${job.status}"></span>
-						</div>
-							<h2 class="col-md-12 tm-content-title" th:text="${job.name}"></h2>
+      <section class="summary-grid">
+        <div class="stat-card">
+          <div class="stat-label">Job ID</div>
+          <div class="stat-value" id="jobIdStat" th:text="${job.id}">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Packets Sent</div>
+          <div class="stat-value stat-value--accent" id="packetsSentStat" th:text="${job.packetsSend}">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Packets Per Second</div>
+          <div class="stat-value stat-value--warning" id="ppsStat" th:text="${job.pps}">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Packets</div>
+          <div class="stat-value stat-value--success" id="totalPacketsStat" th:text="${job.totalPackets}">0</div>
+        </div>
+      </section>
 
+      <section>
+        <article class="panel content-panel">
+          <h2 class="section-title">Execution Metadata</h2>
+          <p class="section-copy">Current runtime state and fixed configuration for this generator job.</p>
+          <div class="metric-grid">
+            <div class="metric-block">
+              <span>Created</span>
+              <strong id="jobCreated" th:text="${job.created}">-</strong>
+            </div>
+            <div class="metric-block">
+              <span>Destination Host</span>
+              <strong id="jobDestHost" th:text="${job.destHost}">127.0.0.1</strong>
+            </div>
+            <div class="metric-block">
+              <span>Destination Port</span>
+              <strong id="jobDestPort" th:text="${job.destPort}">4739</strong>
+            </div>
+            <div class="metric-block">
+              <span>Progress</span>
+              <strong id="jobProgress" th:text="${job.packetsSend + ' / ' + job.totalPackets}">0 / 0</strong>
+            </div>
+          </div>
+        </article>
+      </section>
 
-					<div class="col-md-12">
-								<span style="font-size:10px">Created </span><span style="font-size:10px" th:text="${job.created}"></span>
-							</div>
-							<div class="col-md-12">
-								<br>
-								<br>
-							</div>
-						
-							
-								<div class="col-md-12">
-									
-									 <input type="text" class="form-control"   style="background:transparent" th:value="${job.destHost}" readonly>
-							<small class="form-text text-muted">Destination for IPFIX Packets</small>
-							</div>
-								<div class="col-md-12">
-									
-									 <input type="text" class="form-control"   style="background:transparent" th:value="${job.pps}" readonly>
-							<small class="form-text text-muted">Packets per seconds.</small>
-							</div>
-							<div class="col-md-12">
-									
-									 <input type="text" class="form-control" id="destTotalPackets"  style="background:transparent" th:value="${job.totalPackets}" readonly>
-							<small class="form-text text-muted">Total amount of packets that should be sent.</small>
-							</div>
+      <section class="panel content-panel">
+        <div class="toolbar">
+          <div>
+            <h2 class="section-title">Packet History</h2>
+            <p class="toolbar-copy">The history table keeps a sticky header and bounded viewport. Long packet detail strings are collapsible instead of forcing layout overflow.</p>
+          </div>
+          <span class="muted-inline" id="historyCount">0 entries</span>
+        </div>
 
-						</div>
-					</section>
-				</div>
-				<main class="tm-col-right" style="width: 65%">
-					<section class="tm-content" style="max-width: 100%;">
+        <div class="table-shell history-shell">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="6" class="empty-state">Loading history...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
+        <div class="history-cards" id="historyCards"></div>
+      </section>
+    </main>
 
+    <footer class="footer">
+      <span>Developed by <a href="https://wenisch.tech">Jean-Fabian Wenisch | wenisch.tech</a></span>
+      <span id="detailRefreshHint">Last refresh pending...</span>
+    </footer>
+  </div>
 
-							<h2 class="col-md-12 tm-content-title">History</h2>
-						
-	
-						<div class="table-responsive fixed-table-body" style="display: block; max-height: 550px; overflow-y: auto;">
-							<table id="logTable" class="table table-striped table-responsive fixed-table-body" style="background:white;font-size:10px;width:100%">
-								<thead>
-									<tr>
-										<th>#</th>
-										<th>Date</th>
-										<th>Source</th>
-										<th>Destination</th>
-										<th>Details</th>
-									</tr>
-								</thead>
-								<tbody>
-								</tbody>
-							</table>
-						</div>
+  <script>
+    (function () {
+      const jobId = window.location.pathname.split("/").pop();
+      const historyEndpoint = "/api/jobs/" + jobId + "/history";
+      const jobEndpoint = "/api/jobs/" + jobId;
 
-					</section>
-				</main>
-			</div>
-		</div>
+      const statusNode = document.getElementById("jobStatus");
+      const nameNode = document.getElementById("jobName");
+      const createdNode = document.getElementById("jobCreated");
+      const destHostNode = document.getElementById("jobDestHost");
+      const destPortNode = document.getElementById("jobDestPort");
+      const progressNode = document.getElementById("jobProgress");
+      const packetsSentNode = document.getElementById("packetsSentStat");
+      const ppsNode = document.getElementById("ppsStat");
+      const totalPacketsNode = document.getElementById("totalPacketsStat");
+      const refreshHintNode = document.getElementById("detailRefreshHint");
+      const historyCountNode = document.getElementById("historyCount");
+      const historyTableBody = document.getElementById("historyTableBody");
+      const historyCardsNode = document.getElementById("historyCards");
+      const jobIdStatNode = document.getElementById("jobIdStat");
 
-		<div class="tm-row">
-			<div class="tm-col-left" style="margin-left: 20px"></div>
-			<div class="tm-col-right tm-col-footer">
-				<footer class="tm-site-footer text-right">
-					<p class="mb-0" style="font-size: 10px">
-						Developed by <a href="https://wenisch.tech">Jean-Fabian
-							Wenisch | wenisch.tech</a>
-					</p>
-				</footer>
-			</div>
-		</div>
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (char) {
+          return ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+          })[char];
+        });
+      }
 
-		<!-- Diagonal background design -->
-		<div class="tm-bg">
-			<div class="tm-bg-left"></div>
-			<div class="tm-bg-right"></div>
-		</div>
-	</div>
+      function statusClass(status) {
+        const normalized = String(status || "unknown").toLowerCase();
+        if (normalized === "running" || normalized === "sleeping") {
+          return "status-running";
+        }
+        if (normalized === "completed") {
+          return "status-completed";
+        }
+        if (normalized === "error") {
+          return "status-error";
+        }
+        return "status-initializing";
+      }
 
-	<script src="/js/jquery-3.4.1.min.js"></script>
-	<script src="/js/bootstrap.min.js"></script>
-	<script src="/js/jquery.backstretch.min.js"></script>
-	<script src="/js/templatemo-script.js"></script>
+      function renderJob(job) {
+        if (!job) {
+          return;
+        }
+
+        const safeStatus = escapeHtml(job.status);
+        statusNode.className = "status-badge " + statusClass(job.status);
+        statusNode.textContent = safeStatus;
+        nameNode.textContent = job.name || "Job";
+        createdNode.textContent = job.created || "-";
+        destHostNode.textContent = job.destHost || "-";
+        destPortNode.textContent = job.destPort ?? "-";
+        progressNode.textContent = String(job.packetsSend || 0) + " / " + String(job.totalPackets || 0);
+        packetsSentNode.textContent = String(job.packetsSend || 0);
+        ppsNode.textContent = String(job.pps || 0);
+        totalPacketsNode.textContent = String(job.totalPackets || 0);
+        jobIdStatNode.textContent = String(job.id || jobId);
+      }
+
+      function renderHistory(history) {
+        if (!Array.isArray(history) || history.length === 0) {
+          historyTableBody.innerHTML = "<tr><td colspan='6' class='empty-state'>No packet history is available yet.</td></tr>";
+          historyCardsNode.innerHTML = "<div class='empty-state panel'>No packet history is available yet.</div>";
+          historyCountNode.textContent = "0 entries";
+          return;
+        }
+
+        historyCountNode.textContent = String(history.length) + " entr" + (history.length === 1 ? "y" : "ies");
+        historyTableBody.innerHTML = history.map(function (entry) {
+          const details = escapeHtml(entry.details || "");
+          const summary = details.length > 72 ? details.slice(0, 72) + "..." : details;
+          return "<tr>" +
+            "<td class='table-mono'>" + escapeHtml(entry.packetsSend) + "</td>" +
+            "<td class='table-subtle table-wrap'>" + escapeHtml(entry.date) + "</td>" +
+            "<td><span class='table-code'>" + escapeHtml(entry.action) + "</span></td>" +
+            "<td class='table-mono table-wrap'>" + escapeHtml(entry.sourceIP) + ":" + escapeHtml(entry.sourcePort) + "</td>" +
+            "<td class='table-mono table-wrap'>" + escapeHtml(entry.destIP) + ":" + escapeHtml(entry.destPort) + "</td>" +
+            "<td class='table-details'>" +
+              "<details>" +
+                "<summary>" + summary + "</summary>" +
+                "<pre>" + details + "</pre>" +
+              "</details>" +
+            "</td>" +
+          "</tr>";
+        }).join("");
+
+        historyCardsNode.innerHTML = history.map(function (entry) {
+          const details = escapeHtml(entry.details || "");
+          const summary = details.length > 84 ? details.slice(0, 84) + "..." : details;
+
+          return "<article class='history-card'>" +
+            "<div class='history-card-header'>" +
+              "<div>" +
+                "<p class='mobile-card-title'>Packet " + escapeHtml(entry.packetsSend) + "</p>" +
+                "<span class='table-subtle'>" + escapeHtml(entry.date) + "</span>" +
+              "</div>" +
+              "<span class='table-code'>" + escapeHtml(entry.action) + "</span>" +
+            "</div>" +
+            "<div class='history-card-meta'>" +
+              "<div class='metric-block'>" +
+                "<span>Source</span>" +
+                "<strong>" + escapeHtml(entry.sourceIP) + ":" + escapeHtml(entry.sourcePort) + "</strong>" +
+              "</div>" +
+              "<div class='metric-block'>" +
+                "<span>Destination</span>" +
+                "<strong>" + escapeHtml(entry.destIP) + ":" + escapeHtml(entry.destPort) + "</strong>" +
+              "</div>" +
+            "</div>" +
+            "<details>" +
+              "<summary>" + summary + "</summary>" +
+              "<pre>" + details + "</pre>" +
+            "</details>" +
+          "</article>";
+        }).join("");
+      }
+
+      function loadDetail() {
+        Promise.all([
+          fetch(jobEndpoint).then(function (response) {
+            if (!response.ok) {
+              throw new Error("Failed to load job");
+            }
+            return response.json();
+          }),
+          fetch(historyEndpoint).then(function (response) {
+            if (!response.ok) {
+              throw new Error("Failed to load history");
+            }
+            return response.json();
+          })
+        ]).then(function (results) {
+          renderJob(results[0]);
+          renderHistory(results[1]);
+          refreshHintNode.textContent = "Last refreshed at " + new Date().toLocaleTimeString();
+        }).catch(function () {
+          historyTableBody.innerHTML = "<tr><td colspan='6' class='empty-state'>Could not load the current job detail.</td></tr>";
+          historyCardsNode.innerHTML = "<div class='empty-state panel'>Could not load the current job detail.</div>";
+          refreshHintNode.textContent = "Refresh failed.";
+        });
+      }
+
+      loadDetail();
+      window.setInterval(loadDetail, 3000);
+    })();
+  </script>
 </body>
-<script src="/js/index.js"></script>
 </html>
