@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          helm plugin install https://github.com/karuppiah7890/helm-schema-gen.git
+          helm plugin install https://github.com/karuppiah7890/helm-schema-gen.git --verify=false
           helm schema-gen chart/values.yaml > chart/values.schema.json
 
       - name: Commit release files
