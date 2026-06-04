@@ -101,11 +101,24 @@ Chart-specific configuration examples are documented in [`chart/README.md`](char
 ### REST API
 
 - `GET /api/jobs` returns all known generator jobs
+- `GET /api/jobs/{id}` returns one generator job
 - `GET /api/jobs/{id}/history` returns the history of one job
+- `POST /api/jobs` creates a new generator job from a JSON request body
 - `GET /v3/api-docs` exposes the OpenAPI document
 - `GET /swagger-ui/index.html` serves the interactive Swagger UI
 
 The application keeps job state in memory, so a restart clears the current job list.
+
+Example create request:
+
+```json
+{
+  "destHost": "127.0.0.1",
+  "destPort": "4739",
+  "pps": "1",
+  "totalPackets": "10"
+}
+```
 
 ## Build and Development
 

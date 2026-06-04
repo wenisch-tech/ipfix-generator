@@ -1,11 +1,18 @@
 package tech.wenisch.ipfix.generator.datastructures;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class IPFIXGeneratorJobRequest 
 {
 	String destHost;
 	String destPort;
+	@JsonAlias("destPPS")
 	String pps;
+	@JsonAlias("destTotalPackets")
 	String totalPackets;
+
+	public IPFIXGeneratorJobRequest() {
+	}
 
 	public IPFIXGeneratorJobRequest(String destHost, String destPort, String pps, String totalPackets)
 	{
