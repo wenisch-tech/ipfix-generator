@@ -50,4 +50,26 @@ class APIControllerTest {
 			.andExpect(jsonPath("$.pps").value(1))
 			.andExpect(jsonPath("$.totalPackets").value(10));
 	}
+
+	@Test
+	void stopJobReturnsStoppedJob() throws Exception {
+		IPFIXGeneratorJob stoppedJob = new IPFIXGeneratorJob(new IPFIXGeneratorJobRequest("127.0.0.1", "4739", "1", "0"));
+		stoppedJob.setStatus("Stopped");
+
+		when(ipfixGeneratorService.stopJob(String.valueOf(stoppedJob.getId()))).thenReturn(stoppedJob);
+
+		mockMvc.perform(post("/api/jobs/" + stoppedJob.getId() + "/stop"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(stoppedJob.getId()))
+			.andExpect(jsonPath("$.status").value("Stopped"))
+			.andExpect(jsonPath("$.totalPackets").value(0));
+	}
+
+	@Test
+	void stopJobReturnsNotFoundForUnknownJob() throws Exception {
+		when(ipfixGeneratorService.stopJob("999")).thenReturn(null);
+
+		mockMvc.perform(post("/api/jobs/999/stop"))
+			.andExpect(status().isNotFound());
+	}
 }

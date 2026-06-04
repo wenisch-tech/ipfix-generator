@@ -38,8 +38,9 @@
             <h1 class="page-title" id="jobName" th:text="${job.name}">Job</h1>
             <p class="page-subtitle">Live execution details, delivery metadata, and per-packet history stay inside bounded panels so the page remains readable even with long packet payloads.</p>
           </div>
-          <div>
+          <div class="toolbar-actions">
             <span class="status-badge status-initializing" id="jobStatus" th:text="${job.status}">Initializing</span>
+            <button type="button" class="app-button app-button--danger" id="stopJobButton">Stop Job</button>
           </div>
         </div>
       </section>
@@ -59,7 +60,7 @@
         </div>
         <div class="stat-card">
           <div class="stat-label">Total Packets</div>
-          <div class="stat-value stat-value--success" id="totalPacketsStat" th:text="${job.totalPackets}">0</div>
+          <div class="stat-value stat-value--success" id="totalPacketsStat" th:text="${job.totalPackets == 0 ? 'Continuous' : job.totalPackets}">0</div>
         </div>
       </section>
 
@@ -82,7 +83,7 @@
             </div>
             <div class="metric-block">
               <span>Progress</span>
-              <strong id="jobProgress" th:text="${job.packetsSend + ' / ' + job.totalPackets}">0 / 0</strong>
+              <strong id="jobProgress" th:text="${job.totalPackets == 0 ? job.packetsSend + ' / Continuous' : job.packetsSend + ' / ' + job.totalPackets}">0 / 0</strong>
             </div>
           </div>
         </article>
@@ -147,6 +148,21 @@
       const historyTableBody = document.getElementById("historyTableBody");
       const historyCardsNode = document.getElementById("historyCards");
       const jobIdStatNode = document.getElementById("jobIdStat");
+      const stopJobButton = document.getElementById("stopJobButton");
+
+      function canStop(status) {
+        const normalized = String(status || "").toLowerCase();
+        return normalized === "running" || normalized === "sleeping" || normalized === "initializing";
+      }
+
+      function formatTotalPackets(totalPackets) {
+        return Number(totalPackets) === 0 ? "Continuous" : String(totalPackets ?? 0);
+      }
+
+      function formatProgress(job) {
+        const sent = String(job.packetsSend || 0);
+        return Number(job.totalPackets) === 0 ? sent + " / Continuous" : sent + " / " + String(job.totalPackets || 0);
+      }
 
       function escapeHtml(value) {
         return String(value ?? "").replace(/[&<>"']/g, function (char) {
@@ -171,7 +187,40 @@
         if (normalized === "error") {
           return "status-error";
         }
+        if (normalized === "stopped") {
+          return "status-stopped";
+        }
         return "status-initializing";
+      }
+
+      function updateStopButton(status) {
+        const stopAllowed = canStop(status);
+        stopJobButton.disabled = !stopAllowed;
+        stopJobButton.classList.toggle("is-disabled", !stopAllowed);
+      }
+
+      function stopCurrentJob() {
+        stopJobButton.disabled = true;
+        stopJobButton.textContent = "Stopping...";
+
+        fetch(jobEndpoint + "/stop", { method: "POST" })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Failed to stop job");
+            }
+            return response.json();
+          })
+          .then(function (job) {
+            renderJob(job);
+            refreshHintNode.textContent = "Stop request sent at " + new Date().toLocaleTimeString();
+            stopJobButton.textContent = "Stop Job";
+            loadDetail();
+          })
+          .catch(function () {
+            stopJobButton.disabled = false;
+            stopJobButton.textContent = "Stop Job";
+            refreshHintNode.textContent = "Stop request failed.";
+          });
       }
 
       function renderJob(job) {
@@ -186,11 +235,12 @@
         createdNode.textContent = job.created || "-";
         destHostNode.textContent = job.destHost || "-";
         destPortNode.textContent = job.destPort ?? "-";
-        progressNode.textContent = String(job.packetsSend || 0) + " / " + String(job.totalPackets || 0);
+        progressNode.textContent = formatProgress(job);
         packetsSentNode.textContent = String(job.packetsSend || 0);
         ppsNode.textContent = String(job.pps || 0);
-        totalPacketsNode.textContent = String(job.totalPackets || 0);
+        totalPacketsNode.textContent = formatTotalPackets(job.totalPackets);
         jobIdStatNode.textContent = String(job.id || jobId);
+        updateStopButton(job.status);
       }
 
       function renderHistory(history) {
@@ -275,6 +325,7 @@
         });
       }
 
+      stopJobButton.addEventListener("click", stopCurrentJob);
       loadDetail();
       window.setInterval(loadDetail, 3000);
     })();

@@ -18,17 +18,11 @@
 
 ## Screenshots
 
-### Home
-
-![IPFIX Generator home screen](docs/img/preview_home.jpeg)
-
-### Jobs
-
-![IPFIX Generator jobs overview](docs/img/preview_jobs.jpeg)
-
-### Job Details
-
-![IPFIX Generator job details](docs/img/preview_jobdetails.jpeg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_home.jpeg" alt="IPFIX Generator home screen" width="32%">
+  <img src="https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_jobs.jpeg" alt="IPFIX Generator jobs overview" width="32%">
+  <img src="https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_jobdetails.jpeg" alt="IPFIX Generator job details" width="32%">
+</p>
 
 
 ## Quickstart with Docker
@@ -94,6 +88,7 @@ Chart-specific configuration examples are documented in [`chart/README.md`](char
 - `GET /api/jobs/{id}` returns one generator job
 - `GET /api/jobs/{id}/history` returns the history of one job
 - `POST /api/jobs` creates a new generator job from a JSON request body
+- `POST /api/jobs/{id}/stop` stops a running or continuous generator job
 - `GET /v3/api-docs` exposes the OpenAPI document
 - `GET /swagger-ui/index.html` serves the interactive Swagger UI
 

@@ -49,4 +49,14 @@ public class APIController {
 		IPFIXGeneratorJob job = ipfixGeneratorService.startRequest(request);
 		return ResponseEntity.created(URI.create("/api/jobs/" + job.getId())).body(job);
 	}
+
+	@PostMapping("/api/jobs/{id}/stop")
+	public ResponseEntity<IPFIXGeneratorJob> stopJob(@PathVariable("id") String jobId)
+	{
+		IPFIXGeneratorJob job = ipfixGeneratorService.stopJob(jobId);
+		if (job == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(job);
+	}
 }

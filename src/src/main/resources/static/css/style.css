@@ -393,6 +393,24 @@ a:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.app-button--danger {
+  background: rgba(239, 68, 68, 0.16);
+  color: #ffb1b7;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+.app-button--danger:hover {
+  color: #ffd5d9;
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.app-button:disabled,
+.app-button.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .info-list {
   display: grid;
   gap: 14px;
@@ -459,6 +477,12 @@ a:hover {
   border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
+.status-badge.status-stopped {
+  color: #f8c766;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
 .status-badge.status-initializing,
 .status-badge.status-unknown {
   color: #d4d8df;
@@ -477,6 +501,13 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -663,6 +694,13 @@ a:hover {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.mobile-card-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .mobile-card-meta span,

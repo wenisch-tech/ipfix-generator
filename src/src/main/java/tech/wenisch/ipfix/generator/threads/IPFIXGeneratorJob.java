@@ -29,6 +29,7 @@ public class IPFIXGeneratorJob implements Runnable {
 
 
 	private volatile boolean active = true;
+	private volatile Thread executionThread;
 	static int jobIDCounter = 1;
 
 
@@ -42,19 +43,23 @@ public class IPFIXGeneratorJob implements Runnable {
         this.destPort=Integer.valueOf(request.getDestPort());
         this.pps=Long.parseLong(request.getPps());
         this.totalPackets=Integer.valueOf(request.getTotalPackets());
-        this.name="Sending "+ totalPackets+" to "+destHost+":"+destPort +"("+pps+" PPS)";
+        this.name=totalPackets == 0
+        		? "Sending continuously to " + destHost + ":" + destPort + " (" + pps + " PPS)"
+        		: "Sending " + totalPackets + " to " + destHost + ":" + destPort + " (" + pps + " PPS)";
 	}
 
 	@Override
     public void run() {
+		executionThread = Thread.currentThread();
 		this.status="Running";
 		try (DatagramSocket socket = new DatagramSocket())
 		{
 		MessageHeader mh = IPFIXGeneratorManager.createRandomL2IPIPfixMessage();
 		L2IPDataRecord l2ip = (L2IPDataRecord) mh.getSetHeaders().get(mh.getSetHeaders().size()-1).getDataRecords().get(0);
 		long seqNumber = 0;
+		boolean continuousMode = totalPackets == 0;
 
-		while (packetsSend < totalPackets && active) {
+		while (active && (continuousMode || packetsSend < totalPackets)) {
 			// Message header updating
 			mh.setSequenceNumber(seqNumber);
 			mh.setExportTime(new Date());
@@ -68,27 +73,43 @@ public class IPFIXGeneratorJob implements Runnable {
 
 			DatagramPacket dp = new DatagramPacket(mh.getBytes(), mh.getBytes().length, InetAddress.getByName(destHost),
 					destPort);
-			
-		
-		
-		
-			history.add(new IPFIXGeneratorJobHistoryEntry(packetsSend, new Date().toString() , "Sending",l2ip.getSourceIPv4Address().toString(), 	l2ip.getSourceTransportPort(),	l2ip.getDestinationIPv4Address().toString(),	l2ip.getDestinationTransportPort(),mh.toString()));
-				System.out.println("Sending: " + mh);
+
+			int nextPacketNumber = packetsSend + 1;
+			history.add(new IPFIXGeneratorJobHistoryEntry(nextPacketNumber, new Date().toString() , "Sending",l2ip.getSourceIPv4Address().toString(), 	l2ip.getSourceTransportPort(),	l2ip.getDestinationIPv4Address().toString(),	l2ip.getDestinationTransportPort(),mh.toString()));
+			System.out.println("Sending: " + mh);
 			socket.send(dp);
+			packetsSend = nextPacketNumber;
+
+			if (!active) {
+				break;
+			}
 
 			this.status="Sleeping";
 			Thread.sleep(1000/pps);
 			this.status="Running";
-			packetsSend++;
 
 		}
+		}
+		catch (InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+			if (active) {
+				ex.printStackTrace();
+				this.status="Error";
+			}
 		}
 		catch(Exception ex)
 		{
 			ex.printStackTrace();
 			this.status="Error";
 		}
-		this.status="Completed";
+		finally
+		{
+			executionThread = null;
+		}
+		if (!"Error".equals(this.status)) {
+			this.status = active ? "Completed" : "Stopped";
+		}
     }
     public List<IPFIXGeneratorJobHistoryEntry> getHistory() {
 		return history;
@@ -98,7 +119,13 @@ public class IPFIXGeneratorJob implements Runnable {
 		this.history = history;
 	}
 
-	public void stop() { active = false; }
+	public void stop() {
+		active = false;
+		this.status = "Stopped";
+		if (executionThread != null) {
+			executionThread.interrupt();
+		}
+	}
     public String getCreated() {
 		return created;
 	}

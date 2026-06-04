@@ -2,8 +2,8 @@ package tech.wenisch.ipfix.generator.service;
 
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,7 +15,7 @@ import tech.wenisch.ipfix.generator.threads.IPFIXGeneratorJob;
 @Service
 public class IPFIXGeneratorService {
 	ExecutorService executorService = Executors.newFixedThreadPool(10);
-	static  Map<Integer, IPFIXGeneratorJob> jobs = new HashMap<Integer, IPFIXGeneratorJob> ();
+	static  Map<Integer, IPFIXGeneratorJob> jobs = new ConcurrentHashMap<Integer, IPFIXGeneratorJob> ();
 
 	public IPFIXGeneratorJob startRequest(IPFIXGeneratorJobRequest request) {
     	IPFIXGeneratorJob job = new IPFIXGeneratorJob(request);
@@ -31,5 +31,13 @@ public class IPFIXGeneratorService {
 	}
 	public Collection<IPFIXGeneratorJob> getJobsList() {
 		return jobs.values();
+	}
+
+	public IPFIXGeneratorJob stopJob(String jobId) {
+		IPFIXGeneratorJob job = getJobById(jobId);
+		if (job != null) {
+			job.stop();
+		}
+		return job;
 	}
 }
