@@ -1,20 +1,29 @@
-FROM ubuntu
+# syntax=docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 
+FROM cgr.dev/chainguard/jre:latest
 
-ENV DEBIAN_FRONTEND noninteractive
+WORKDIR /app
 
-RUN apt-get update -y
-RUN apt-get install -y console-setup sudo wget curl unzip openjdk-21-jdk \
-	&& apt-get install -y --no-install-recommends software-properties-common
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG BUILD_REVISION
 
-RUN useradd --create-home -s /bin/bash user && \
-    adduser user sudo && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
+LABEL org.opencontainers.image.title="ipfix-generator" \
+      org.opencontainers.image.description="Spring Boot application for generating IPFIX traffic" \
+      org.opencontainers.image.url="https://github.com/JFWenisch/ipfix-generator" \
+      org.opencontainers.image.source="https://github.com/JFWenisch/ipfix-generator" \
+      org.opencontainers.image.documentation="https://github.com/JFWenisch/ipfix-generator/blob/main/README.md" \
+      org.opencontainers.image.authors="JFWenisch" \
+      org.opencontainers.image.licenses="GPL-3.0" \
+      org.opencontainers.image.vendor="JFWenisch" \
+      org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_REVISION}" \
+      org.opencontainers.image.created="${BUILD_DATE}"
 
-USER user
-ENV USER=user
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=20.0 -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom"
 
+COPY src/target/ipfix-generator-*.jar /app/app.jar
 
-COPY --chown=user:user src/target/*.jar /ipfix-generator.jar
-ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk-amd64/
-ENTRYPOINT ["java","-jar","ipfix-generator.jar"]
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
