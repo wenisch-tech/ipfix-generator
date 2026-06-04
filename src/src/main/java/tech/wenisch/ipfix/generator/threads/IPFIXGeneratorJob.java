@@ -8,9 +8,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import tech.wenisch.ipfix.generator.datastructures.IPFIXGeneratorJobHistoryEntry;
 import tech.wenisch.ipfix.generator.datastructures.IPFIXGeneratorJobRequest;
-import tech.wenisch.ipfix.generator.datastructures.ipfix.L2IPDataRecord;
+import tech.wenisch.ipfix.generator.datastructures.IPFIXTemplateType;
+import tech.wenisch.ipfix.generator.datastructures.ipfix.FlowDataRecord;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.MessageHeader;
 import tech.wenisch.ipfix.generator.managers.IPFIXGeneratorManager;
 
@@ -25,6 +29,9 @@ public class IPFIXGeneratorJob implements Runnable {
 	long pps;
 	int totalPackets;
 	int packetsSend;
+	@Schema(description = "The selected IPFIX data template.", allowableValues = {
+			IPFIXTemplateType.L2IP, IPFIXTemplateType.IPV4_FIVE_TUPLE }, defaultValue = IPFIXTemplateType.L2IP)
+	String template;
 	List <IPFIXGeneratorJobHistoryEntry> history = new ArrayList<IPFIXGeneratorJobHistoryEntry>();
 
 
@@ -43,6 +50,7 @@ public class IPFIXGeneratorJob implements Runnable {
         this.destPort=Integer.valueOf(request.getDestPort());
         this.pps=Long.parseLong(request.getPps());
         this.totalPackets=Integer.valueOf(request.getTotalPackets());
+        this.template=IPFIXTemplateType.normalize(request.getTemplate());
         this.name=totalPackets == 0
         		? "Sending continuously to " + destHost + ":" + destPort + " (" + pps + " PPS)"
         		: "Sending " + totalPackets + " to " + destHost + ":" + destPort + " (" + pps + " PPS)";
@@ -54,8 +62,8 @@ public class IPFIXGeneratorJob implements Runnable {
 		this.status="Running";
 		try (DatagramSocket socket = new DatagramSocket())
 		{
-		MessageHeader mh = IPFIXGeneratorManager.createRandomL2IPIPfixMessage();
-		L2IPDataRecord l2ip = (L2IPDataRecord) mh.getSetHeaders().get(mh.getSetHeaders().size()-1).getDataRecords().get(0);
+		MessageHeader mh = IPFIXGeneratorManager.createRandomIPFIXMessage(template);
+		FlowDataRecord flowDataRecord = (FlowDataRecord) mh.getSetHeaders().get(mh.getSetHeaders().size()-1).getDataRecords().get(0);
 		long seqNumber = 0;
 		boolean continuousMode = totalPackets == 0;
 
@@ -65,17 +73,17 @@ public class IPFIXGeneratorJob implements Runnable {
 			mh.setExportTime(new Date());
 			seqNumber++;
 
-			// L2IP updating
+			// Flow timestamps update per exported message
 			BigInteger flowStartEnd = BigInteger.valueOf(new Date().getTime());
-			l2ip.setFlowStartMilliseconds(flowStartEnd);
-			l2ip.setFlowEndMilliseconds(flowStartEnd);
+			flowDataRecord.setFlowStartMilliseconds(flowStartEnd);
+			flowDataRecord.setFlowEndMilliseconds(flowStartEnd);
 
 
 			DatagramPacket dp = new DatagramPacket(mh.getBytes(), mh.getBytes().length, InetAddress.getByName(destHost),
 					destPort);
 
 			int nextPacketNumber = packetsSend + 1;
-			history.add(new IPFIXGeneratorJobHistoryEntry(nextPacketNumber, new Date().toString() , "Sending",l2ip.getSourceIPv4Address().toString(), 	l2ip.getSourceTransportPort(),	l2ip.getDestinationIPv4Address().toString(),	l2ip.getDestinationTransportPort(),mh.toString()));
+			history.add(new IPFIXGeneratorJobHistoryEntry(nextPacketNumber, new Date().toString() , "Sending",flowDataRecord.getSourceAddressText(), 	flowDataRecord.getSourceTransportPort(),	flowDataRecord.getDestinationAddressText(),	flowDataRecord.getDestinationTransportPort(),mh.toString()));
 			System.out.println("Sending: " + mh);
 			socket.send(dp);
 			packetsSend = nextPacketNumber;
@@ -202,5 +210,18 @@ public class IPFIXGeneratorJob implements Runnable {
 
 	public void setPacketsSend(int packetsSend) {
 		this.packetsSend = packetsSend;
+	}
+
+	public String getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(String template) {
+		this.template = IPFIXTemplateType.normalize(template);
+	}
+
+	@JsonIgnore
+	public String getTemplateDisplayName() {
+		return IPFIXTemplateType.getDisplayName(template);
 	}
 }

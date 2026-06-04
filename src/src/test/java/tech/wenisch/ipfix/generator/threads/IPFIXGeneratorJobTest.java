@@ -9,15 +9,26 @@ import java.net.DatagramSocket;
 import org.junit.jupiter.api.Test;
 
 import tech.wenisch.ipfix.generator.datastructures.IPFIXGeneratorJobRequest;
+import tech.wenisch.ipfix.generator.datastructures.IPFIXTemplateType;
 
 class IPFIXGeneratorJobTest {
 
 	@Test
 	void zeroTotalPacketsRunsUntilStopped() throws Exception {
+		assertContinuousJobCanBeStopped(new IPFIXGeneratorJobRequest("127.0.0.1", "0", "20", "0"));
+	}
+
+	@Test
+	void zeroTotalPacketsRunsUntilStoppedForIpv4FiveTuple() throws Exception {
+		assertContinuousJobCanBeStopped(
+				new IPFIXGeneratorJobRequest("127.0.0.1", "0", "20", "0", IPFIXTemplateType.IPV4_FIVE_TUPLE));
+	}
+
+	private void assertContinuousJobCanBeStopped(IPFIXGeneratorJobRequest request) throws Exception {
 		try (DatagramSocket collectorSocket = new DatagramSocket(0)) {
 			collectorSocket.setSoTimeout(2000);
-			IPFIXGeneratorJob job = new IPFIXGeneratorJob(
-					new IPFIXGeneratorJobRequest("127.0.0.1", String.valueOf(collectorSocket.getLocalPort()), "20", "0"));
+			request.setDestPort(String.valueOf(collectorSocket.getLocalPort()));
+			IPFIXGeneratorJob job = new IPFIXGeneratorJob(request);
 			Thread worker = new Thread(job);
 
 			worker.start();

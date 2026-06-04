@@ -5,6 +5,7 @@ import tech.wenisch.ipfix.generator.exceptions.HeaderParseException;
 import tech.wenisch.ipfix.generator.managers.UtilityManager;
 
 public class SamplingDataRecord extends DataRecord {
+	public static final int SET_ID = 256;
 	public static final int LENGTH = 16; // 2 bytes padding
 	
 	private long observationDomainId;

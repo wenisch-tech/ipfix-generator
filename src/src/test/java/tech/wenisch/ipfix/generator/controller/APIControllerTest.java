@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tech.wenisch.ipfix.generator.datastructures.IPFIXGeneratorJobRequest;
+import tech.wenisch.ipfix.generator.datastructures.IPFIXTemplateType;
 import tech.wenisch.ipfix.generator.service.IPFIXGeneratorService;
 import tech.wenisch.ipfix.generator.threads.IPFIXGeneratorJob;
 
@@ -48,7 +49,30 @@ class APIControllerTest {
 			.andExpect(jsonPath("$.destHost").value("127.0.0.1"))
 			.andExpect(jsonPath("$.destPort").value(4739))
 			.andExpect(jsonPath("$.pps").value(1))
-			.andExpect(jsonPath("$.totalPackets").value(10));
+			.andExpect(jsonPath("$.totalPackets").value(10))
+			.andExpect(jsonPath("$.template").value(IPFIXTemplateType.L2IP));
+	}
+
+	@Test
+	void createJobSupportsExplicitTemplate() throws Exception {
+		IPFIXGeneratorJob createdJob = new IPFIXGeneratorJob(
+				new IPFIXGeneratorJobRequest("127.0.0.1", "4739", "1", "10", IPFIXTemplateType.IPV4_FIVE_TUPLE));
+
+		when(ipfixGeneratorService.startRequest(any(IPFIXGeneratorJobRequest.class))).thenReturn(createdJob);
+
+		mockMvc.perform(post("/api/jobs")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+					{
+					  "destHost": "127.0.0.1",
+					  "destPort": "4739",
+					  "pps": "1",
+					  "totalPackets": "10",
+					  "template": "IPV4_FIVE_TUPLE"
+					}
+					"""))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.template").value(IPFIXTemplateType.IPV4_FIVE_TUPLE));
 	}
 
 	@Test

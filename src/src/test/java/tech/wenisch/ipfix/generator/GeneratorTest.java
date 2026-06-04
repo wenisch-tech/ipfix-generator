@@ -10,6 +10,8 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
+import tech.wenisch.ipfix.generator.datastructures.IPFIXTemplateType;
+import tech.wenisch.ipfix.generator.datastructures.ipfix.IPv4FiveTupleDataRecord;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.L2IPDataRecord;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.MessageHeader;
 import tech.wenisch.ipfix.generator.managers.IPFIXGeneratorManager;
@@ -64,4 +66,25 @@ public class GeneratorTest {
 		
         assertEquals(1, 1);
     }
+
+	@Test
+	void createRandomL2ipMessageRoundTrips() throws Exception {
+		MessageHeader message = IPFIXGeneratorManager.createRandomIPFIXMessage(IPFIXTemplateType.L2IP);
+		MessageHeader parsed = MessageHeader.parse(message.getBytes());
+
+		assertEquals(L2IPDataRecord.TEMPLATE_ID, parsed.getSetHeaders().get(parsed.getSetHeaders().size() - 1).getSetID());
+		assertInstanceOf(L2IPDataRecord.class,
+				parsed.getSetHeaders().get(parsed.getSetHeaders().size() - 1).getDataRecords().get(0));
+	}
+
+	@Test
+	void createRandomIpv4FiveTupleMessageRoundTrips() throws Exception {
+		MessageHeader message = IPFIXGeneratorManager.createRandomIPFIXMessage(IPFIXTemplateType.IPV4_FIVE_TUPLE);
+		MessageHeader parsed = MessageHeader.parse(message.getBytes());
+
+		assertEquals(IPv4FiveTupleDataRecord.TEMPLATE_ID,
+				parsed.getSetHeaders().get(parsed.getSetHeaders().size() - 1).getSetID());
+		assertInstanceOf(IPv4FiveTupleDataRecord.class,
+				parsed.getSetHeaders().get(parsed.getSetHeaders().size() - 1).getDataRecords().get(0));
+	}
 }

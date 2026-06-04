@@ -10,7 +10,9 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Random;
 
+import tech.wenisch.ipfix.generator.datastructures.IPFIXTemplateType;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.InformationElement;
+import tech.wenisch.ipfix.generator.datastructures.ipfix.IPv4FiveTupleDataRecord;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.L2IPDataRecord;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.MessageHeader;
 import tech.wenisch.ipfix.generator.datastructures.ipfix.OptionTemplateRecord;
@@ -21,6 +23,7 @@ import tech.wenisch.ipfix.generator.datastructures.networking.MacAddress;
 import tech.wenisch.ipfix.generator.exceptions.UtilityException;
 
 public class IPFIXGeneratorManager {
+	public static final long OBSERVATION_DOMAIN_ID = 1337;
 
 	static boolean debug;
 
@@ -36,7 +39,7 @@ public class IPFIXGeneratorManager {
 
 		TemplateRecord tr = new TemplateRecord();
 
-		tr.setTemplateID(306);
+		tr.setTemplateID(L2IPDataRecord.TEMPLATE_ID);
 		tr.setFieldCount(26);
 
 		InformationElement iESrcMAC = new InformationElement();
@@ -171,6 +174,65 @@ public class IPFIXGeneratorManager {
 		return tr;
 	}
 
+	static TemplateRecord createIPv4FiveTupleTemplateRecord() {
+		TemplateRecord tr = new TemplateRecord();
+
+		tr.setTemplateID(IPv4FiveTupleDataRecord.TEMPLATE_ID);
+		tr.setFieldCount(10);
+
+		InformationElement sourceIPv4 = new InformationElement();
+		sourceIPv4.setFieldLength(4);
+		sourceIPv4.setInformationElementID(8);
+		tr.getInformationElements().add(sourceIPv4);
+
+		InformationElement destinationIPv4 = new InformationElement();
+		destinationIPv4.setFieldLength(4);
+		destinationIPv4.setInformationElementID(12);
+		tr.getInformationElements().add(destinationIPv4);
+
+		InformationElement sourcePort = new InformationElement();
+		sourcePort.setFieldLength(2);
+		sourcePort.setInformationElementID(7);
+		tr.getInformationElements().add(sourcePort);
+
+		InformationElement destinationPort = new InformationElement();
+		destinationPort.setFieldLength(2);
+		destinationPort.setInformationElementID(11);
+		tr.getInformationElements().add(destinationPort);
+
+		InformationElement protocolIdentifier = new InformationElement();
+		protocolIdentifier.setFieldLength(1);
+		protocolIdentifier.setInformationElementID(4);
+		tr.getInformationElements().add(protocolIdentifier);
+
+		InformationElement packetDeltaCount = new InformationElement();
+		packetDeltaCount.setFieldLength(4);
+		packetDeltaCount.setInformationElementID(2);
+		tr.getInformationElements().add(packetDeltaCount);
+
+		InformationElement octetDeltaCount = new InformationElement();
+		octetDeltaCount.setFieldLength(4);
+		octetDeltaCount.setInformationElementID(1);
+		tr.getInformationElements().add(octetDeltaCount);
+
+		InformationElement flowStartMilliseconds = new InformationElement();
+		flowStartMilliseconds.setFieldLength(8);
+		flowStartMilliseconds.setInformationElementID(152);
+		tr.getInformationElements().add(flowStartMilliseconds);
+
+		InformationElement flowEndMilliseconds = new InformationElement();
+		flowEndMilliseconds.setFieldLength(8);
+		flowEndMilliseconds.setInformationElementID(153);
+		tr.getInformationElements().add(flowEndMilliseconds);
+
+		InformationElement tcpControlBits = new InformationElement();
+		tcpControlBits.setFieldLength(1);
+		tcpControlBits.setInformationElementID(6);
+		tr.getInformationElements().add(tcpControlBits);
+
+		return tr;
+	}
+
 	static OptionTemplateRecord createDefaultOptionTemplate() {
 		OptionTemplateRecord otr = new OptionTemplateRecord();
 
@@ -255,8 +317,36 @@ public class IPFIXGeneratorManager {
 		l2ip.setIcmpTypeCodeIPv4(1);
 		l2ip.setPacketDeltaCount(2);
 		l2ip.setOctetDeltaCount(3);
+		BigInteger now = BigInteger.valueOf(new Date().getTime());
+		l2ip.setFlowStartMilliseconds(now);
+		l2ip.setFlowEndMilliseconds(now);
 
 		return l2ip;
+	}
+
+	static IPv4FiveTupleDataRecord createRandomIPv4FiveTupleDataRecord() throws UnknownHostException {
+		IPv4FiveTupleDataRecord record = new IPv4FiveTupleDataRecord();
+		Random random = new Random();
+
+		byte[] addrIPv4 = new byte[4];
+		random.nextBytes(addrIPv4);
+		record.setSourceIPv4Address((Inet4Address) Inet4Address.getByAddress(addrIPv4));
+		random.nextBytes(addrIPv4);
+		record.setDestinationIPv4Address((Inet4Address) Inet4Address.getByAddress(addrIPv4));
+
+		record.setSourceTransportPort(1024 + random.nextInt(64512));
+		record.setDestinationTransportPort(1024 + random.nextInt(64512));
+
+		short protocol = (short) (random.nextBoolean() ? 6 : 17);
+		record.setProtocolIdentifier(protocol);
+		record.setPacketDeltaCount(1 + random.nextInt(32));
+		record.setOctetDeltaCount(64 + random.nextInt(4096));
+		record.setTcpControlBits(protocol == 6 ? (random.nextBoolean() ? 2 : 18) : 0);
+
+		BigInteger now = BigInteger.valueOf(new Date().getTime());
+		record.setFlowStartMilliseconds(now);
+		record.setFlowEndMilliseconds(now);
+		return record;
 	}
 	public static void main(String args[]) {
 		
@@ -297,32 +387,38 @@ public class IPFIXGeneratorManager {
 		}
 	}
 	
+	public static MessageHeader createRandomIPFIXMessage(String template) throws UnknownHostException, UtilityException {
+		String normalizedTemplate = IPFIXTemplateType.normalize(template);
+		if (IPFIXTemplateType.IPV4_FIVE_TUPLE.equals(normalizedTemplate)) {
+			return createRandomIPv4FiveTupleIPfixMessage();
+		}
+		return createRandomL2IPIPfixMessage();
+	}
+
 	public static MessageHeader createRandomL2IPIPfixMessage() throws UnknownHostException, UtilityException {
+		return createRandomFlowMessage(IPFIXTemplateType.L2IP);
+	}
 
-		// create IPFIX data
-		//
-		// Message header
-		MessageHeader mh = createMessageHeader(1337);
+	public static MessageHeader createRandomIPv4FiveTupleIPfixMessage() throws UnknownHostException, UtilityException {
+		return createRandomFlowMessage(IPFIXTemplateType.IPV4_FIVE_TUPLE);
+	}
 
-		// Set header for the template
+	private static MessageHeader createRandomFlowMessage(String template) throws UnknownHostException, UtilityException {
+		String normalizedTemplate = IPFIXTemplateType.normalize(template);
+		MessageHeader mh = createMessageHeader(OBSERVATION_DOMAIN_ID);
+
 		SetHeader shTemplate = new SetHeader();
 		mh.getSetHeaders().add(shTemplate);
 		shTemplate.setSetID(2);
+		shTemplate.getTemplateRecords().add(createTemplateRecord(normalizedTemplate));
 
-		TemplateRecord tr = createDefaultTemplateRecord();
-		shTemplate.getTemplateRecords().add(tr);
-
-		// Set header for the template options
 		SetHeader shTemplateOptions = new SetHeader();
 		mh.getSetHeaders().add(shTemplateOptions);
 		shTemplateOptions.setSetID(3);
+		shTemplateOptions.getOptionTemplateRecords().add(createDefaultOptionTemplate());
 
-		OptionTemplateRecord otr = createDefaultOptionTemplate();
-		shTemplateOptions.getOptionTemplateRecords().add(otr);
-
-		// Set header for the sampling
 		SetHeader shSampling = new SetHeader();
-		shSampling.setSetID(256);
+		shSampling.setSetID(SamplingDataRecord.SET_ID);
 		mh.getSetHeaders().add(shSampling);
 
 		SamplingDataRecord sdr = new SamplingDataRecord();
@@ -330,17 +426,34 @@ public class IPFIXGeneratorManager {
 		sdr.setObservationDomainId(67108864);
 		sdr.setSelectorAlgorithm(1);
 		sdr.setSamplingPacketInterval(1);
-		sdr.setSamplingPacketSpace(1 - 1);
+		sdr.setSamplingPacketSpace(0);
 
-		// Set header for the L2IP
 		SetHeader shDataRecord = new SetHeader();
-		shDataRecord.setSetID(306);
+		shDataRecord.setSetID(getTemplateId(normalizedTemplate));
 		mh.getSetHeaders().add(shDataRecord);
+		shDataRecord.getDataRecords().add(createDataRecordForTemplate(normalizedTemplate));
 
-		L2IPDataRecord l2ip = createRandomDataRecord();
-		shDataRecord.getDataRecords().add(l2ip);
+		return mh;
+	}
 
-	return mh;
+	private static TemplateRecord createTemplateRecord(String template) {
+		return IPFIXTemplateType.IPV4_FIVE_TUPLE.equals(template)
+				? createIPv4FiveTupleTemplateRecord()
+				: createDefaultTemplateRecord();
+	}
+
+	private static int getTemplateId(String template) {
+		return IPFIXTemplateType.IPV4_FIVE_TUPLE.equals(template)
+				? IPv4FiveTupleDataRecord.TEMPLATE_ID
+				: L2IPDataRecord.TEMPLATE_ID;
+	}
+
+	private static tech.wenisch.ipfix.generator.datastructures.ipfix.DataRecord createDataRecordForTemplate(String template)
+			throws UnknownHostException, UtilityException {
+		if (IPFIXTemplateType.IPV4_FIVE_TUPLE.equals(template)) {
+			return createRandomIPv4FiveTupleDataRecord();
+		}
+		return createRandomDataRecord();
 	}
 
 }

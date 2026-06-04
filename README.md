@@ -10,6 +10,7 @@
 ## Features
 
 - Web UI for creating and reviewing IPFIX generation jobs
+- Supports both `L2IP` and `IPv4 5-tuple` generator templates
 - REST endpoints for listing jobs and retrieving per-job history
 - Hosted Swagger UI for interactive REST API documentation
 - Configurable target host, port, packets-per-second, and packet counts
@@ -88,6 +89,7 @@ Chart-specific configuration examples are documented in [`chart/README.md`](char
 - `GET /api/jobs/{id}` returns one generator job
 - `GET /api/jobs/{id}/history` returns the history of one job
 - `POST /api/jobs` creates a new generator job from a JSON request body
+- `template` supports `L2IP` and `IPV4_FIVE_TUPLE`, defaulting to `L2IP` when omitted
 - `POST /api/jobs/{id}/stop` stops a running or continuous generator job
 - `GET /v3/api-docs` exposes the OpenAPI document
 - `GET /swagger-ui/index.html` serves the interactive Swagger UI
@@ -101,7 +103,8 @@ Example create request:
   "destHost": "127.0.0.1",
   "destPort": "4739",
   "pps": "1",
-  "totalPackets": "10"
+  "totalPackets": "10",
+  "template": "IPV4_FIVE_TUPLE"
 }
 ```
 

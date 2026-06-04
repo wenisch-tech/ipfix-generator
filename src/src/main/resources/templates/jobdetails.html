@@ -74,6 +74,10 @@
               <strong id="jobCreated" th:text="${job.created}">-</strong>
             </div>
             <div class="metric-block">
+              <span>Template</span>
+              <strong id="jobTemplate" th:text="${job.templateDisplayName}">L2IP</strong>
+            </div>
+            <div class="metric-block">
               <span>Destination Host</span>
               <strong id="jobDestHost" th:text="${job.destHost}">127.0.0.1</strong>
             </div>
@@ -137,6 +141,7 @@
       const statusNode = document.getElementById("jobStatus");
       const nameNode = document.getElementById("jobName");
       const createdNode = document.getElementById("jobCreated");
+      const templateNode = document.getElementById("jobTemplate");
       const destHostNode = document.getElementById("jobDestHost");
       const destPortNode = document.getElementById("jobDestPort");
       const progressNode = document.getElementById("jobProgress");
@@ -149,6 +154,10 @@
       const historyCardsNode = document.getElementById("historyCards");
       const jobIdStatNode = document.getElementById("jobIdStat");
       const stopJobButton = document.getElementById("stopJobButton");
+
+      function formatTemplate(template) {
+        return String(template || "L2IP") === "IPV4_FIVE_TUPLE" ? "IPv4 5-tuple" : "L2IP";
+      }
 
       function canStop(status) {
         const normalized = String(status || "").toLowerCase();
@@ -233,6 +242,7 @@
         statusNode.textContent = safeStatus;
         nameNode.textContent = job.name || "Job";
         createdNode.textContent = job.created || "-";
+        templateNode.textContent = formatTemplate(job.template);
         destHostNode.textContent = job.destHost || "-";
         destPortNode.textContent = job.destPort ?? "-";
         progressNode.textContent = formatProgress(job);

@@ -79,6 +79,7 @@
               <tr>
                 <th>ID</th>
                 <th>Job</th>
+                <th>Template</th>
                 <th>Destination</th>
                 <th>Status</th>
                 <th>PPS</th>
@@ -89,7 +90,7 @@
             </thead>
             <tbody id="jobsTableBody">
               <tr>
-                <td colspan="8" class="empty-state">Loading jobs...</td>
+                <td colspan="9" class="empty-state">Loading jobs...</td>
               </tr>
             </tbody>
           </table>
@@ -112,6 +113,10 @@
       const completedJobs = document.getElementById("completedJobs");
       const packetsSent = document.getElementById("packetsSent");
       const jobsRefreshHint = document.getElementById("jobsRefreshHint");
+
+      function formatTemplate(template) {
+        return String(template || "L2IP") === "IPV4_FIVE_TUPLE" ? "IPv4 5-tuple" : "L2IP";
+      }
 
       function canStop(status) {
         const normalized = String(status || "").toLowerCase();
@@ -187,7 +192,7 @@
 
       function renderJobs(data) {
         if (!Array.isArray(data) || data.length === 0) {
-          tableBody.innerHTML = "<tr><td colspan='8' class='empty-state'>No jobs have been created yet.</td></tr>";
+          tableBody.innerHTML = "<tr><td colspan='9' class='empty-state'>No jobs have been created yet.</td></tr>";
           cards.innerHTML = "<div class='empty-state panel'>No jobs have been created yet.</div>";
           totalJobs.textContent = "0";
           runningJobs.textContent = "0";
@@ -212,6 +217,7 @@
           const safeCreated = escapeHtml(item.created);
           const safeHost = escapeHtml(item.destHost);
           const safeStatus = escapeHtml(item.status);
+          const safeTemplate = escapeHtml(formatTemplate(item.template));
           const safePort = escapeHtml(item.destPort);
           const safeProgress = escapeHtml(formatProgress(item));
           const safePps = escapeHtml(item.pps);
@@ -223,6 +229,7 @@
           return "<tr>" +
             "<td><span class='table-code'>#" + escapeHtml(item.id) + "</span></td>" +
             "<td class='table-title'><a href='/jobs/" + escapeHtml(item.id) + "'><strong>" + safeName + "</strong></a></td>" +
+            "<td><span class='table-code'>" + safeTemplate + "</span></td>" +
             "<td class='table-wrap'><span class='table-code'>" + safeHost + ":" + safePort + "</span></td>" +
             "<td><span class='status-badge " + rowClass + "'>" + safeStatus + "</span></td>" +
             "<td class='table-mono'>" + safePps + "</td>" +
@@ -251,6 +258,7 @@
               "<span class='status-badge " + rowClass + "'>" + safeStatus + "</span>" +
             "</div>" +
             "<div class='mobile-card-meta'>" +
+              "<div><span>Template</span><strong>" + escapeHtml(formatTemplate(item.template)) + "</strong></div>" +
               "<div><span>Destination</span><strong>" + escapeHtml(item.destHost) + ":" + escapeHtml(item.destPort) + "</strong></div>" +
               "<div><span>PPS</span><strong>" + escapeHtml(item.pps) + "</strong></div>" +
               "<div><span>Packets</span><strong>" + escapeHtml(item.packetsSend) + "</strong></div>" +
@@ -292,7 +300,7 @@
           })
           .then(renderJobs)
           .catch(function () {
-            tableBody.innerHTML = "<tr><td colspan='8' class='empty-state'>Could not load jobs right now.</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan='9' class='empty-state'>Could not load jobs right now.</td></tr>";
             cards.innerHTML = "<div class='empty-state panel'>Could not load jobs right now.</div>";
             jobsRefreshHint.textContent = "Refresh failed.";
           });

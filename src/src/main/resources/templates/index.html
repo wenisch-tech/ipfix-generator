@@ -54,10 +54,11 @@
 
               <div class="field field--full">
                 <label for="destInput">Data template</label>
-                <select class="app-select" id="destInput">
-                  <option>L2IP</option>
+                <select class="app-select" id="destInput" name="template">
+                  <option value="L2IP">L2IP</option>
+                  <option value="IPV4_FIVE_TUPLE">IPv4 5-tuple</option>
                 </select>
-                <small>Select the record template that defines which flow fields are generated and exported.</small>
+                <small>Select the record template that defines which flow fields are generated and exported. Supported templates are L2IP and IPv4 5-tuple.</small>
               </div>
 
               <div class="field field--full">

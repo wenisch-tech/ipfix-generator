@@ -83,6 +83,32 @@ public class SetHeader extends AbstractHeader implements IPFIXEntity {
 		}
 		this.length = newLength;
 	}
+
+	private static int getDataRecordLength(int setId) {
+		if (setId == SamplingDataRecord.SET_ID) {
+			return SamplingDataRecord.LENGTH;
+		}
+		if (setId == L2IPDataRecord.TEMPLATE_ID) {
+			return L2IPDataRecord.LENGTH;
+		}
+		if (setId == IPv4FiveTupleDataRecord.TEMPLATE_ID) {
+			return IPv4FiveTupleDataRecord.LENGTH;
+		}
+		return -1;
+	}
+
+	private static DataRecord parseDataRecord(int setId, byte[] data) throws HeaderParseException {
+		if (setId == SamplingDataRecord.SET_ID) {
+			return SamplingDataRecord.parse(data);
+		}
+		if (setId == L2IPDataRecord.TEMPLATE_ID) {
+			return L2IPDataRecord.parse(data);
+		}
+		if (setId == IPv4FiveTupleDataRecord.TEMPLATE_ID) {
+			return IPv4FiveTupleDataRecord.parse(data);
+		}
+		throw new HeaderParseException("Set ID " + setId + " is unknown and not handled");
+	}
 	
 	public static SetHeader parse(byte[] data) throws HeaderParseException {
 		try {
@@ -113,21 +139,19 @@ public class SetHeader extends AbstractHeader implements IPFIXEntity {
 				sh.getOptionTemplateRecords().add(otr);
 			}
 			// > 256 -> data record;
-			else if (sh.getSetID() == 256) {
+			else if (sh.getSetID() >= SamplingDataRecord.SET_ID) {
 				int offset = 4;
-				byte[] subData = new byte[sh.getLength() - offset]; 
-				System.arraycopy(data, offset, subData, 0, SamplingDataRecord.LENGTH);
-				SamplingDataRecord sdr = SamplingDataRecord.parse(subData); 
-				sh.getDataRecords().add(sdr);
-			}
-			else if (sh.getSetID() == 306) {
-				int offset = 4;
-				while ((sh.getLength() - offset - L2IPDataRecord.LENGTH) >= 0) { 
-					byte[] subData = new byte[sh.getLength() - offset]; 
-					System.arraycopy(data, offset, subData, 0, L2IPDataRecord.LENGTH);
-					L2IPDataRecord lidr = L2IPDataRecord.parse(subData); 
-					sh.getDataRecords().add(lidr);
-					offset += L2IPDataRecord.LENGTH;
+				int recordLength = getDataRecordLength(sh.getSetID());
+				if (recordLength < 0) {
+					LOGGER.log(Level.INFO, "Set ID " + sh.getSetID() + " is unknown and not handled");
+					return sh;
+				}
+
+				while ((sh.getLength() - offset - recordLength) >= 0) {
+					byte[] subData = new byte[recordLength];
+					System.arraycopy(data, offset, subData, 0, recordLength);
+					sh.getDataRecords().add(parseDataRecord(sh.getSetID(), subData));
+					offset += recordLength;
 				}
 				if ((sh.getLength() - offset) != 0) LOGGER.log(Level.INFO, "Unused bytes: " + (sh.getLength() - offset));
 			} else {

@@ -41,8 +41,8 @@ public class GUIController {
 	}
 
 	@PostMapping("/create")
-	public String processInput(@RequestParam("destHost") String destHost, @RequestParam("destPort") String destPort,@RequestParam("destPPS") String destPPS,@RequestParam("destTotalPackets") String destTotalPackets, Model model) {
-		IPFIXGeneratorJobRequest request = new IPFIXGeneratorJobRequest(destHost, destPort, destPPS, destTotalPackets);
+	public String processInput(@RequestParam("destHost") String destHost, @RequestParam("destPort") String destPort,@RequestParam("destPPS") String destPPS,@RequestParam("destTotalPackets") String destTotalPackets, @RequestParam(name = "template", required = false) String template, Model model) {
+		IPFIXGeneratorJobRequest request = new IPFIXGeneratorJobRequest(destHost, destPort, destPPS, destTotalPackets, template);
 		IPFIXGeneratorJob job= ipfixGeneratorService.startRequest(request);
 		return "redirect:/jobs/"+job.getId();
 	}

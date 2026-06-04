@@ -10,7 +10,8 @@ import tech.wenisch.ipfix.generator.exceptions.HeaderBytesException;
 import tech.wenisch.ipfix.generator.exceptions.HeaderParseException;
 import tech.wenisch.ipfix.generator.managers.UtilityManager;
 
-public class L2IPDataRecord extends DataRecord {
+public class L2IPDataRecord extends DataRecord implements FlowDataRecord {
+	public static final int TEMPLATE_ID = 306;
 	protected static final int LENGTH = 111;
 	
 	private MacAddress sourceMacAddress;
@@ -264,6 +265,16 @@ public class L2IPDataRecord extends DataRecord {
 	@Override
 	public int getLength() {
 		return LENGTH;
+	}
+
+	@Override
+	public String getSourceAddressText() {
+		return ipVersion == 6 ? sourceIPv6Address.getHostAddress() : sourceIPv4Address.getHostAddress();
+	}
+
+	@Override
+	public String getDestinationAddressText() {
+		return ipVersion == 6 ? destinationIPv6Address.getHostAddress() : destinationIPv4Address.getHostAddress();
 	}
 
 	public static L2IPDataRecord parse(byte[] data) throws HeaderParseException {
