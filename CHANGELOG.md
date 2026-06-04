@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.2 - 2026-06-04
+
+### [0.6.2](https://github.com/JFWenisch/ipfix-generator/compare/v0.6.1...v0.6.2) (2026-06-04)
+
+
+### Bug Fixes
+
+* ensure workflow is serialized ([b948f36](https://github.com/JFWenisch/ipfix-generator/commit/b948f362188f8b56b9344ef497d133bcda53ebc8))
+
+
+
+Docker image: ghcr.io/jfwenisch/ipfix-generator:0.6.2
+
+
 ## v0.6.1 - 2026-06-04
 
 ### [0.6.1](https://github.com/JFWenisch/ipfix-generator/compare/v0.6.0...v0.6.1) (2026-06-04)
