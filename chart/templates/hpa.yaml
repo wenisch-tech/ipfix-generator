@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "webtools.fullname" . }}
+  name: {{ include "ipfix-generator.fullname" . }}
   labels:
-    {{- include "webtools.labels" . | nindent 4 }}
+    {{- include "ipfix-generator.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "webtools.fullname" . }}
+    name: {{ include "ipfix-generator.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

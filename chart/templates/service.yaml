@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "webtools.fullname" . }}
+  name: {{ include "ipfix-generator.fullname" . }}
   labels:
-    {{- include "webtools.labels" . | nindent 4 }}
+    {{- include "ipfix-generator.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.targetPort | default .Values.service.port }}
       protocol: TCP
       name: http
   selector:
-    {{- include "webtools.selectorLabels" . | nindent 4 }}
+    {{- include "ipfix-generator.selectorLabels" . | nindent 4 }}

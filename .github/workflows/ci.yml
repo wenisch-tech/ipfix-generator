@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+  checks: write
+  packages: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  versioning:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tag_version.outputs.new_tag }}
+      version: ${{ steps.version.outputs.version }}
+      changelog: ${{ steps.tag_version.outputs.changelog }}
+      image: ${{ steps.image.outputs.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Normalize image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version and generate changelog
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ github.token }}
+          release_branches: main
+          default_bump: patch
+          dry_run: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
+
+      - name: Derive application version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ steps.tag_version.outputs.new_tag }}"
+
+          if [ -z "$tag" ]; then
+            tag="v0.4.2"
+          fi
+
+          version="${tag#v}"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            version="${version}-pr.${{ github.event.number }}.${{ github.run_number }}"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  test:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    needs: versioning
+    uses: ./.github/workflows/_test.yml
+    with:
+      version: ${{ needs.versioning.outputs.version }}
+
+  docker:
+    if: (github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')) && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
+    needs:
+      - versioning
+      - test
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+      issues: write
+    uses: ./.github/workflows/_docker.yml
+    with:
+      version: ${{ needs.versioning.outputs.version }}
+      image: ${{ needs.versioning.outputs.image }}
+    secrets: inherit
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip ci]')
+    needs:
+      - versioning
+      - test
+      - docker
+    permissions:
+      contents: write
+      packages: read
+    uses: ./.github/workflows/_release.yml
+    with:
+      version: ${{ needs.versioning.outputs.version }}
+      tag: ${{ needs.versioning.outputs.tag }}
+      changelog: ${{ needs.versioning.outputs.changelog }}
+      image: ${{ needs.versioning.outputs.image }}
+      digest: ${{ needs.docker.outputs.digest }}
+    secrets: inherit

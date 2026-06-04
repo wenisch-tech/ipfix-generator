@@ -5,26 +5,34 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.0</version>
+		<version>3.5.14</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>tech.wenisch</groupId>
 	<artifactId>ipfix-generator</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.4.2</version>
+	<packaging>jar</packaging>
 	<name>ipfix-generator</name>
-	<description>ipfix-generator</description>
-	<url/>
+	<description>Spring Boot IPFIX traffic generator with web UI and REST endpoints.</description>
+	<url>https://github.com/JFWenisch/ipfix-generator</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>GNU General Public License v3.0</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.en.html</url>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>JFWenisch</id>
+			<name>Jean-Fabian Wenisch</name>
+			<url>https://github.com/JFWenisch</url>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/JFWenisch/ipfix-generator.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/JFWenisch/ipfix-generator.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/JFWenisch/ipfix-generator</url>
 	</scm>
 	<properties>
 		<java.version>21</java.version>
@@ -52,6 +60,13 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -1,21 +1,40 @@
 apiVersion: v2
 name: ipfix-generator
-description: A Helm chart for Kubernetes
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+description: A Spring Boot IPFIX traffic generator with a web UI and REST endpoints.
 type: application
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: v0.4.2
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "v0.4.2"
+version: 0.4.2
+appVersion: "0.4.2"
+keywords:
+  - ipfix
+  - netflow
+  - networking
+  - traffic-generator
+  - spring-boot
+home: https://github.com/JFWenisch/ipfix-generator
+icon: https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/src/src/main/resources/static/img/logo.png
+sources:
+  - https://github.com/JFWenisch/ipfix-generator
+maintainers:
+  - name: JFWenisch
+    url: https://github.com/JFWenisch
+annotations:
+  artifacthub.io/category: networking
+  artifacthub.io/license: GPL-3.0-only
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/images: |
+    - name: ipfix-generator
+      image: ghcr.io/jfwenisch/ipfix-generator:latest
+  artifacthub.io/links: |
+    - name: GitHub Repository
+      url: https://github.com/JFWenisch/ipfix-generator
+    - name: Helm Chart README
+      url: https://github.com/JFWenisch/ipfix-generator/blob/main/chart/README.md
+    - name: Container Registry
+      url: https://github.com/JFWenisch/ipfix-generator/pkgs/container/ipfix-generator
+  artifacthub.io/screenshots: |
+    - title: Dashboard
+      url: https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_home.jpeg
+    - title: Jobs Overview
+      url: https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_jobs.jpeg
+    - title: Job Details
+      url: https://raw.githubusercontent.com/JFWenisch/ipfix-generator/main/docs/img/preview_jobdetails.jpeg

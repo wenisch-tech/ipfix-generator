@@ -1,0 +1,51 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Set Maven version
+        run: mvn -B -f src/pom.xml versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
+
+      - name: Run tests
+        run: mvn -B -f src/pom.xml verify
+
+      - name: Publish JUnit report
+        if: always()
+        uses: dorny/test-reporter@v3
+        with:
+          name: Maven Tests
+          path: src/target/surefire-reports/*.xml
+          reporter: java-junit
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipfix-generator-build-${{ github.run_id }}
+          path: |
+            src/target/*.jar
+            src/target/surefire-reports/*.xml

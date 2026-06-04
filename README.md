@@ -1,55 +1,147 @@
-# ipfix-generator ![Build](https://github.com/JFWenisch/ipfix-generator/actions/workflows/build.yml/badge.svg) ![Version](https://img.shields.io/github/v/release/jfwenisch/ipfix-generator) ![License](https://img.shields.io/github/license/jfwenisch/ipfix-generator) ![Size](https://img.shields.io/github/repo-size/jfwenisch/ipfix-generator)  
-## Overview
-This IPFIX (IP Flow Information Export) Generator is a tool designed to create and send IPFIX traffic for testing, demonstration, and analysis purposes. It simulates network flow data by generating IPFIX packets, which can be used to test network monitoring systems, analyze network performance, and ensure the accuracy of flow data collection. It features a graphical user interface (GUI) for ease of use and can also be accessed via its API and REST endpoints.
+# ipfix-generator
 
-![IPFIX Generator](https://raw.githubusercontent.com/JFWenisch/ipfix-generator/refs/heads/main/docs/img/preview_home.jpeg)
+![CI](https://github.com/JFWenisch/ipfix-generator/actions/workflows/ci.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/JFWenisch/ipfix-generator)
+![License](https://img.shields.io/github/license/JFWenisch/ipfix-generator)
+![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jfwenisch)
 
-
+`ipfix-generator` is a Spring Boot application for generating IPFIX traffic for demos, lab environments, and integration testing. It provides a browser-based UI for creating generator jobs and a small REST API for listing jobs and their history.
 
 ## Features
-- **Graphical User Interface (GUI)**: User-friendly interface for generating and managing IPFIX messages.
 
-- **API Access**: Programmatic access to generate IPFIX messages via REST Endpoints allowing integration with other tools and systems.
+- Web UI for creating and reviewing IPFIX generation jobs
+- REST endpoints for listing jobs and retrieving per-job history
+- Configurable target host, port, packets-per-second, and packet counts
+- Container image published to GitHub Container Registry
+- Helm chart for Kubernetes-based deployments
 
-- **Customizable Parameters**: Configure various parameters for IPFIX message generation.
+## Screenshots
+
+### Home
+
+![IPFIX Generator home screen](docs/img/preview_home.jpeg)
+
+### Jobs
+
+![IPFIX Generator jobs overview](docs/img/preview_jobs.jpeg)
+
+### Job Details
+
+![IPFIX Generator job details](docs/img/preview_jobdetails.jpeg)
+
+## Docker Usage
+
+Pull and run the published image:
+
+```bash
+docker run -d \
+  --name ipfix-generator \
+  -p 8080:8080 \
+  ghcr.io/jfwenisch/ipfix-generator:latest
+```
+
+## Steps to Run
+
+1. Start the container:
+
+```bash
+docker run -d \
+  --name ipfix-generator \
+  -p 8080:8080 \
+  ghcr.io/jfwenisch/ipfix-generator:latest
+```
+
+2. Open `http://localhost:8080` in your browser.
+
+3. Create a generator job from the home page by setting:
+
+- destination host
+- destination port
+- packets per second
+- total packets
+
+4. Review active jobs under `http://localhost:8080/jobs`.
+
+5. Inspect job history in the UI or through `GET /api/jobs/{id}/history`.
+
+## Helm Chart
+
+### Install from the chart repository
+
+```bash
+helm repo add jfwenisch https://charts.wenisch.tech
+helm repo update
+helm install ipfix-generator jfwenisch/ipfix-generator -n ipfix-generator --create-namespace
+```
+
+### Install from this repository
+
+```bash
+helm install ipfix-generator ./chart -n ipfix-generator --create-namespace
+```
+
+### Upgrade an existing release
+
+```bash
+helm upgrade ipfix-generator ./chart -n ipfix-generator
+```
 
 
+Chart-specific configuration examples are documented in [`chart/README.md`](chart/README.md).
 
-## Quickstart
+## Application Usage
 
+### Web UI
+
+- `GET /` renders the landing page and job creation form
+- `GET /jobs` renders the jobs overview page
+- `GET /jobs/{id}` renders the job detail view
+
+### REST API
+
+- `GET /api/jobs` returns all known generator jobs
+- `GET /api/jobs/{id}/history` returns the history of one job
+
+The application keeps job state in memory, so a restart clears the current job list.
+
+## Build and Development
 
 ### Prerequisites
 
-- Docker installed on your machine
+- Java 21
+- Maven 3.9+
+- Docker
+- Helm 3.x
 
-### Steps to Run
+### Build and Test
 
-1. **Pull the Docker Image**:
-   Run the Docker Container: Use the following command to run the Docker container, making sure to map port 8080
-   ```bash
-   docker run -p 8080:8080 ghcr.io/jfwenisch/ipfix-generator:latest
-2. **Access the GUI** : Open your web browser and navigate to http://localhost:8080. You will see the graphical user interface (GUI) of the IPFIX Message Generator.
+```bash
+mvn -B -f src/pom.xml test
+mvn -B -f src/pom.xml package
+```
 
-3. **Set Parameters and Create a New Generator Job** : Use the GUI to set the desired parameters and create a new generator job. The interface is user-friendly and allows you to configure various parameters for IPFIX message generation.
+### Run from Source
 
-## Installation [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jfwenisch)](https://artifacthub.io/packages/search?repo=jfwenisch) 
-The IPFIX Generator tool is available via Helm. Follow these steps to install it:
+```bash
+mvn -B -f src/pom.xml spring-boot:run
+```
 
-1. **Add the Helm repository**:
-   ```bash
-   helm repo add jfwenisch https://charts.wenisch.tech
-   ```
+### Build the Container Locally
 
-2. **Install the IPFIX Generator**:
-   ```bash
-   helm install ipfix-generator jfwenisch/ipfix-generator
-   ```
-## Contributing
-Contributions are welcome! Please fork the repository and submit pull requests.
+```bash
+docker build -t ghcr.io/jfwenisch/ipfix-generator:local .
+docker run --rm -p 8080:8080 ghcr.io/jfwenisch/ipfix-generator:local
+```
+
 
 ## License
-This project is licensed under the GNU GPL Version 3. See the LICENSE file for details.
+
+This project is licensed under the GNU GPL v3. See [LICENSE](LICENSE) for details.
+
+## Contributing
+
+Contributions are welcome. Fork the repository, make your changes in a feature branch, and open a pull request with a clear description of the change.
 
 ## Acknowledgments
 
-This project is influenced by the [jFlowLib](https://github.com/DE-CIX/jFlowLib/tree/master) library, which provides a Java library to parse and generate sFlow and IPFIX data.
+This project is influenced by [jFlowLib](https://github.com/DE-CIX/jFlowLib/tree/master), which provides a Java library to parse and generate sFlow and IPFIX data.
