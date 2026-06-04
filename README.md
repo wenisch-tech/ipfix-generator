@@ -11,6 +11,7 @@
 
 - Web UI for creating and reviewing IPFIX generation jobs
 - REST endpoints for listing jobs and retrieving per-job history
+- Hosted Swagger UI for interactive REST API documentation
 - Configurable target host, port, packets-per-second, and packet counts
 - Container image published to GitHub Container Registry
 - Helm chart for Kubernetes-based deployments
@@ -101,6 +102,8 @@ Chart-specific configuration examples are documented in [`chart/README.md`](char
 
 - `GET /api/jobs` returns all known generator jobs
 - `GET /api/jobs/{id}/history` returns the history of one job
+- `GET /v3/api-docs` exposes the OpenAPI document
+- `GET /swagger-ui/index.html` serves the interactive Swagger UI
 
 The application keeps job state in memory, so a restart clears the current job list.
 
