@@ -3,43 +3,35 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-
 image:
   repository: ghcr.io/jfwenisch/ipfix-generator
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-
+  tag: "0.6.1"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
 serviceAccount:
   create: true
   automount: false
   annotations: {}
   name: ""
-
 podAnnotations: {}
 podLabels: {}
-
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   fsGroup: 1000
-
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
   readOnlyRootFilesystem: false
-
 service:
   type: ClusterIP
   port: 8080
   targetPort: 8080
-
 ingress:
   enabled: false
   className: ""
@@ -50,7 +42,6 @@ ingress:
         - path: /
           pathType: Prefix
   tls: []
-
 resources:
   requests:
     cpu: 100m
@@ -58,14 +49,11 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
 # Environment variables passed directly to the container.
 env: {}
-
 # Sensitive environment variables rendered into a Kubernetes Secret
 # and then exposed to the container via envFrom.
 secrets: {}
-
 livenessProbe:
   enabled: true
   httpGet:
@@ -75,7 +63,6 @@ livenessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
-
 readinessProbe:
   enabled: true
   httpGet:
@@ -85,7 +72,6 @@ readinessProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
-
 startupProbe:
   enabled: true
   httpGet:
@@ -94,20 +80,14 @@ startupProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 30
-
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage:
-
 volumes: []
-
 volumeMounts: []
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
