@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.3 - 2026-07-27
+
+### [0.6.3](https://github.com/wenisch-tech/ipfix-generator/compare/v0.6.2...v0.6.3) (2026-07-27)
+
+
+
+Docker image: ghcr.io/wenisch-tech/ipfix-generator:0.6.3
+
+
 ## v0.6.2 - 2026-06-04
 
 ### [0.6.2](https://github.com/JFWenisch/ipfix-generator/compare/v0.6.1...v0.6.2) (2026-06-04)
