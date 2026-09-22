@@ -2,8 +2,8 @@ apiVersion: v2
 name: ipfix-generator
 description: A Spring Boot IPFIX traffic generator with a web UI and REST endpoints.
 type: application
-version: 0.6.4
-appVersion: "0.6.4"
+version: 0.6.5
+appVersion: "0.6.5"
 keywords:
   - ipfix
   - netflow
