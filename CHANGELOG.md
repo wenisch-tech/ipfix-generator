@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.9 - 2026-10-05
+
+### [0.6.9](https://github.com/wenisch-tech/ipfix-generator/compare/v0.6.8...v0.6.9) (2026-10-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.springframework.boot:spring-boot-starter-parent to v3.5.16 ([f639cfb](https://github.com/wenisch-tech/ipfix-generator/commit/f639cfbba4b1167b24869aebe76e6bcd6b7b51b0))
+
+
+
+Docker image: ghcr.io/wenisch-tech/ipfix-generator:0.6.9
+
+
 ## v0.6.5 - 2026-09-22
 
 ### [0.6.5](https://github.com/wenisch-tech/ipfix-generator/compare/v0.6.4...v0.6.5) (2026-09-22)
